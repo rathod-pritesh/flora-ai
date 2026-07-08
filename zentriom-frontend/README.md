@@ -15,7 +15,7 @@ To recreate this project with the same configuration:
 
 ```sh
 # recreate this project
-npx sv@0.16.2 create --template minimal --no-types --add prettier --install npm flora-frontend
+npx sv@0.16.2 create --template minimal --no-types --add prettier --install npm zentriom-frontend
 ```
 
 ## Developing

@@ -1,121 +1,98 @@
 <script>
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import { appState } from "$lib/states/app.svelte.js";
-	import { Sparkles, Languages, Share2, Code, Wrench, Briefcase, ChevronRight, Plus, Trash, X } from "lucide-svelte";
+	import { page } from "$app/stores";
+	import { authStore } from "$lib/stores/auth.svelte.js";
+	import { Sparkles, Languages, Share2, Code, Wrench, Briefcase, ChevronRight, User, LogOut, Settings } from "lucide-svelte";
+	import { Avatar, AvatarFallback } from "$lib/components/ui/avatar/index.js";
+	import { replaceState } from '$app/navigation';
+	import {
+		DropdownMenu,
+		DropdownMenuTrigger,
+		DropdownMenuContent,
+		DropdownMenuItem,
+		DropdownMenuLabel,
+		DropdownMenuSeparator,
+		DropdownMenuGroup
+	} from "$lib/components/ui/dropdown-menu/index.js";
+	import LoginForm from "$lib/components/auth/LoginForm.svelte";
+	import SignUpForm from "$lib/components/auth/SignUpForm.svelte";
+	import { loginWithGoogle } from '$lib/services/auth.js';
+
+import {
+	setAuth
+} from '$lib/stores/auth.svelte.js';
 
 	let activeSection = $state("");
-	let showOnboardingModal = $state(false);
+	let authTab = $state("login"); // "login" | "signup"
 
-	// Onboarding form state
-	let fullName = $state("");
-	let email = $state("");
-	let title = $state("");
-	let skillInput = $state("");
-	let skillsList = $state([]);
-	let locationPref = $state("");
-	let availability = $state("Remote");
-	let jobType = $state("Full-time");
-
-	let errors = $state({
-		name: "",
-		email: "",
-		title: "",
-		skills: "",
-		location: ""
-	});
-
-	function handleLaunch(e) {
-		if (e) e.preventDefault();
-		if (appState.user && appState.user.name) {
-			goto("/dashboard");
-		} else {
-			showOnboardingModal = true;
+	// Scroll helper to Auth card
+	function scrollToAuth() {
+		const authEl = document.getElementById("auth-section");
+		if (authEl) {
+			authEl.scrollIntoView({ behavior: "smooth" });
 		}
 	}
 
-	function addSkill() {
-		const trimmed = skillInput.trim();
-		if (trimmed && !skillsList.includes(trimmed)) {
-			skillsList = [...skillsList, trimmed];
-			skillInput = "";
-			errors.skills = "";
-		}
-	}
+	async function handleGoogleLogin() {
+	try {
+		console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+		window.google.accounts.id.initialize({
+			client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
 
-	function removeSkill(skill) {
-		skillsList = skillsList.filter(s => s !== skill);
-	}
+			callback: async (response) => {
+				try {
+					const result = await loginWithGoogle(
+						response.credential
+					);
 
-	function validateAndSubmit(e) {
-		if (e) e.preventDefault();
-		
-		// Reset errors
-		errors = { name: "", email: "", title: "", skills: "", location: "" };
-		let isValid = true;
+					setAuth(
+						result.user,
+						result.token
+					);
 
-		if (!fullName.trim()) {
-			errors.name = "Full Name is required";
-			isValid = false;
-		}
-
-		if (!email.trim()) {
-			errors.email = "Email Address is required";
-			isValid = false;
-		} else if (!email.includes("@") || !email.includes(".")) {
-			errors.email = "Please enter a valid email address";
-			isValid = false;
-		}
-
-		if (!title.trim()) {
-			errors.title = "Professional Title is required";
-			isValid = false;
-		}
-
-		if (skillsList.length < 2) {
-			errors.skills = "Please add at least 2 skills (mandatory)";
-			isValid = false;
-		}
-
-		if (!locationPref.trim()) {
-			errors.location = "Location preference is required";
-			isValid = false;
-		}
-
-		if (isValid) {
-			appState.user = {
-				name: fullName.trim(),
-				email: email.trim(),
-				title: title.trim(),
-				skills: [...skillsList],
-				preferences: {
-					location: locationPref.trim(),
-					remote: availability,
-					jobType: jobType
+					goto('/dashboard');
 				}
-			};
-
-			if (typeof window !== 'undefined') {
-				localStorage.setItem('zentriom_user', JSON.stringify(appState.user));
+				catch (err) {
+					console.error(err);
+					alert('Google login failed');
+				}
 			}
+		});
 
-			showOnboardingModal = false;
-			goto("/dashboard");
-		}
+		window.google.accounts.id.prompt();
 	}
+	catch (err) {
+		console.error(err);
+		alert('Unable to start Google login');
+	}
+}
+
+	function handleLogOut() {
+		authStore.user = null;
+		authStore.token = null;
+		authStore.isAuthenticated = false;
+		authStore.loading = false;
+	}
+
+	// Watch URL parameters to trigger auto-scroll to authentication section if redirected
+	$effect(() => {
+		if ($page.url.searchParams.get("showAuth") === "true") {
+			scrollToAuth();
+		}
+	});
 
 	onMount(() => {
 		const sections = ["features", "how-it-works", "why-zentriom"];
 		
 		const handleScroll = () => {
 			let current = "";
-			const threshold = 180; // height offset to match when sticky header covers it
+			const threshold = 180;
 			
 			for (const sectionId of sections) {
 				const element = document.getElementById(sectionId);
 				if (element) {
 					const rect = element.getBoundingClientRect();
-					// If the section is currently occupying the focal area of the viewport
 					if (rect.top <= threshold && rect.bottom > threshold) {
 						current = sectionId;
 						break;
@@ -131,21 +108,6 @@
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
-	});
-
-	$effect(() => {
-		if (typeof window !== 'undefined') {
-			if (activeSection) {
-				const hash = `#${activeSection}`;
-				if (window.location.hash !== hash) {
-					history.replaceState(null, "", hash);
-				}
-			} else {
-				if (window.location.hash) {
-					history.replaceState(null, "", window.location.pathname);
-				}
-			}
-		}
 	});
 
 	const features = [
@@ -178,7 +140,9 @@
 		<div class="max-w-7xl mx-auto flex h-16 items-center justify-between">
 			<div class="flex items-center gap-3">
 				<img src="/zentriom_logo_for_dark_theme.png" class="size-11 object-contain" alt="Zentriom" />
-				<span class="text-xl font-bold tracking-tight text-[#1C1917] font-sans">Zentriom</span>
+				<span class="text-xl font-bold tracking-tight text-[#1C1917] font-sans">
+					<a href="/">Zentriom</a>
+				</span>
 			</div>
 			<nav class="hidden md:flex items-center gap-6 text-sm font-medium">
 				<a 
@@ -194,12 +158,58 @@
 					class="pb-1 hover:text-[#A16207] transition-all {activeSection === 'why-zentriom' ? 'text-[#A16207] border-b-2 border-[#A16207]' : 'border-b-2 border-transparent text-stone-500'}"
 				>Why Zentriom</a>
 			</nav>
-			<button
-				onclick={handleLaunch}
-				class="inline-flex h-9 items-center justify-center rounded-md bg-[#A16207] px-4 text-xs font-semibold text-[#F8F7F4] hover:bg-[#A16207]/90 transition-colors shadow-xs cursor-pointer select-none outline-none"
-			>
-				Launch Workspace
-			</button>
+
+			{#if authStore.isAuthenticated}
+				<div class="flex items-center gap-4">
+					<a
+						href="/dashboard"
+						class="inline-flex h-9 items-center justify-center rounded-md bg-[#A16207] px-4 text-xs font-semibold text-[#F8F7F4] hover:bg-[#A16207]/90 transition-colors shadow-xs cursor-pointer select-none outline-none"
+					>
+						Dashboard
+					</a>
+					<DropdownMenu>
+						<DropdownMenuTrigger class="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#A16207]/50 select-none">
+							<Avatar class="size-9 border border-stone-200 cursor-pointer">
+								<AvatarFallback class="bg-stone-100 text-stone-650 hover:bg-stone-200 text-sm font-semibold flex items-center justify-center">
+									<User class="size-4 shrink-0" />
+								</AvatarFallback>
+							</Avatar>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" class="w-56 bg-white border border-stone-200 shadow-lg rounded-md p-1">
+							<DropdownMenuLabel class="px-2 py-1.5 text-sm font-semibold text-stone-950 font-sans">
+								My Account
+							</DropdownMenuLabel>
+							<DropdownMenuSeparator class="my-1 border-t border-stone-100" />
+							<DropdownMenuGroup>
+								<DropdownMenuItem onclick={() => goto("/settings")} class="flex items-center gap-2 px-2 py-1.5 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 rounded-sm cursor-pointer outline-none font-sans">
+									<Settings class="size-4" />
+									Settings
+								</DropdownMenuItem>
+								<DropdownMenuSeparator class="my-1 border-t border-stone-100" />
+								<DropdownMenuItem onclick={handleLogOut} class="flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-sm cursor-pointer outline-none font-sans">
+									<LogOut class="size-4" />
+									Log Out
+								</DropdownMenuItem>
+							</DropdownMenuGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			{:else}
+				<div class="flex items-center gap-3">
+					<button
+						onclick={scrollToAuth}
+						class="inline-flex h-9 items-center justify-center rounded-md border border-stone-200 bg-white px-4 text-xs font-semibold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer select-none outline-none"
+					>
+						Login
+					</button>
+					<button
+						onclick={scrollToAuth}
+						class="inline-flex h-9 items-center justify-center rounded-md bg-[#A16207] px-4 text-xs font-semibold text-[#F8F7F4] hover:bg-[#A16207]/90 transition-colors shadow-xs cursor-pointer select-none outline-none"
+					>
+						Get Started
+					</button>
+				</div>
+			{/if}
 		</div>
 	</header>
 
@@ -217,13 +227,23 @@
 				An intelligent workspace powered by IBM Granite and LangGraph that helps students, developers, and professionals write better, understand code, fix bugs, create content, and discover career opportunities.
 			</p>
 			<div class="flex flex-wrap items-center justify-center gap-4 pt-4">
-				<button
-					onclick={handleLaunch}
-					class="inline-flex h-11 items-center justify-center rounded-lg bg-[#A16207] px-6 text-sm font-semibold text-[#F8F7F4] hover:bg-[#A16207]/90 transition-all shadow-sm cursor-pointer select-none outline-none"
-				>
-					Get Started
-					<ChevronRight class="size-4 ml-1.5" />
-				</button>
+				{#if authStore.isAuthenticated}
+					<a
+						href="/dashboard"
+						class="inline-flex h-11 items-center justify-center rounded-lg bg-[#A16207] px-6 text-sm font-semibold text-[#F8F7F4] hover:bg-[#A16207]/90 transition-all shadow-sm cursor-pointer select-none outline-none"
+					>
+						Dashboard
+						<ChevronRight class="size-4 ml-1.5" />
+					</a>
+				{:else}
+					<button
+						onclick={scrollToAuth}
+						class="inline-flex h-11 items-center justify-center rounded-lg bg-[#A16207] px-6 text-sm font-semibold text-[#F8F7F4] hover:bg-[#A16207]/90 transition-all shadow-sm cursor-pointer select-none outline-none"
+					>
+						Get Started
+						<ChevronRight class="size-4 ml-1.5" />
+					</button>
+				{/if}
 				<a
 					href="#features"
 					class="inline-flex h-11 items-center justify-center rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] px-6 text-sm font-semibold text-stone-600 hover:bg-[#F8F7F4] transition-all shadow-2xs"
@@ -292,207 +312,89 @@
 		</div>
 	</section>
 
-	<!-- CTA Section -->
-	<section class="py-20 px-4 sm:px-6 lg:px-8 border-t border-[#E7E5E4]">
-		<div class="max-w-4xl mx-auto rounded-2xl border border-[#E7E5E4] bg-[#FDFCFB] p-8 md:p-12 text-center shadow-xs space-y-6">
-			<h2 class="text-3xl font-extrabold tracking-tight text-[#1C1917] sm:text-4xl">
-				Ready to start using Zentriom?
-			</h2>
-			<p class="max-w-md mx-auto text-stone-500 text-xs sm:text-sm leading-relaxed">
-				Launch the copilot canvas and access grammar fixer, code explainer, LinkedIn template engines, and jobs dashboard instantly.
-			</p>
-			<div>
-				<button
-					onclick={handleLaunch}
-					class="inline-flex h-11 items-center justify-center rounded-lg bg-[#A16207] px-6 text-sm font-semibold text-[#F8F7F4] hover:bg-[#A16207]/90 transition-all shadow-sm cursor-pointer select-none outline-none"
-				>
-					Launch Workspace
-					<ChevronRight class="size-4 ml-1.5" />
-				</button>
+	<!-- Authentication Section -->
+	{#if !authStore.isAuthenticated}
+		<section id="auth-section" class="py-16 px-4 sm:px-6 lg:px-8 border-t border-[#E7E5E4] bg-[#FDFCFB]/30">
+			<div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+				<div class="space-y-6">
+					<h2 class="text-3xl font-extrabold tracking-tight text-[#1C1917] sm:text-4xl font-sans leading-tight">
+						Experience the power of Granite AI
+					</h2>
+					<p class="text-stone-500 font-sans text-sm sm:text-base leading-relaxed">
+						Join developers and professionals who use Zentriom to automate their writing, analyze code, fix bugs, and track job matches in one unified environment.
+					</p>
+					<ul class="space-y-3">
+						<li class="flex items-center gap-3 text-xs font-semibold text-stone-600">
+							<span class="size-1.5 rounded-full bg-[#A16207]"></span>
+							IBM Granite & LangGraph under the hood
+						</li>
+						<li class="flex items-center gap-3 text-xs font-semibold text-stone-600">
+							<span class="size-1.5 rounded-full bg-[#A16207]"></span>
+							Active code explainers and grammar fixer tools
+						</li>
+						<li class="flex items-center gap-3 text-xs font-semibold text-stone-600">
+							<span class="size-1.5 rounded-full bg-[#A16207]"></span>
+							Zero-friction signup, get access instantly
+						</li>
+					</ul>
+				</div>
+
+				<div class="w-full max-w-md mx-auto rounded-2xl border border-[#E7E5E4] bg-white p-6 sm:p-8 shadow-sm space-y-6">
+					<!-- Tab Headers -->
+					<div class="flex border-b border-[#E7E5E4]">
+						<button
+							onclick={() => authTab = "login"}
+							class="flex-1 pb-3 text-sm font-bold text-center transition-all cursor-pointer outline-none select-none
+								{authTab === 'login' ? 'text-[#A16207] border-b-2 border-[#A16207]' : 'text-stone-400 border-b-2 border-transparent hover:text-stone-600'}"
+						>
+							Sign In
+						</button>
+						<button
+							onclick={() => authTab = "signup"}
+							class="flex-1 pb-3 text-sm font-bold text-center transition-all cursor-pointer outline-none select-none
+								{authTab === 'signup' ? 'text-[#A16207] border-b-2 border-[#A16207]' : 'text-stone-400 border-b-2 border-transparent hover:text-stone-600'}"
+						>
+							Create Account
+						</button>
+					</div>
+
+					<!-- Continue with Google button -->
+					<div class="space-y-4">
+						<button
+							type="button"
+							onclick={handleGoogleLogin}
+							class="w-full h-10 border border-[#E7E5E4] rounded-lg bg-white text-stone-700 hover:bg-stone-50 transition-colors text-xs font-bold flex items-center justify-center gap-2 outline-none cursor-pointer"
+						>
+							<!-- Google Color Logo Icon -->
+							<svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+								<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+								<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+								<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+							</svg>
+							<span>Continue with Google</span>
+						</button>
+
+						<div class="relative flex py-1 items-center">
+							<div class="flex-grow border-t border-stone-200"></div>
+							<span class="flex-shrink mx-4 text-[9px] font-bold text-stone-400 uppercase tracking-wider">OR CONTINUE WITH EMAIL</span>
+							<div class="flex-grow border-t border-stone-200"></div>
+						</div>
+					</div>
+
+					<!-- Form components -->
+					{#if authTab === "login"}
+						<LoginForm />
+					{:else}
+						<SignUpForm />
+					{/if}
+				</div>
 			</div>
-		</div>
-	</section>
+		</section>
+	{/if}
 
 	<!-- Footer -->
 	<footer class="border-t border-[#E7E5E4] py-8 px-4 sm:px-6 lg:px-8 text-center text-stone-400 text-[11px]">
 		<p>© {new Date().getFullYear()} Zentriom AI. Built with IBM Granite &amp; LangGraph. All rights reserved.</p>
 	</footer>
-
-	<!-- Onboarding Modal Overlay -->
-	{#if showOnboardingModal}
-		<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2926]/60 backdrop-blur-xs transition-opacity duration-300">
-			<!-- Modal Content -->
-			<div class="bg-[#FDFCFB] border border-[#E7E5E4] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 space-y-6 shadow-2xl relative">
-				
-				<!-- Close Button -->
-				<button 
-					onclick={() => showOnboardingModal = false} 
-					class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 outline-none select-none transition-colors cursor-pointer"
-					aria-label="Close modal"
-				>
-					<X class="size-5" />
-				</button>
-
-				<!-- Header -->
-				<div class="space-y-1">
-					<h3 class="text-xl font-bold tracking-tight text-[#1C1917] font-sans">Configure Your Onboarding Profile</h3>
-					<p class="text-[#A16207] text-[11px] font-sans font-semibold">Step inside your developer dashboard using custom parameters</p>
-				</div>
-
-				<form onsubmit={validateAndSubmit} class="space-y-4">
-					<!-- Full Name -->
-					<div class="space-y-1">
-						<label for="onboarding-fullname" class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans">Full Name *</label>
-						<input 
-							id="onboarding-fullname"
-							type="text" 
-							bind:value={fullName} 
-							placeholder="e.g. Pritesh Rathod" 
-							class="w-full h-10 px-3 rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs" 
-						/>
-						{#if errors.name}
-							<p class="text-red-600 text-[10px] font-semibold mt-0.5">{errors.name}</p>
-						{/if}
-					</div>
-
-					<!-- Email Address -->
-					<div class="space-y-1">
-						<label for="onboarding-email" class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans">Email Address *</label>
-						<input 
-							id="onboarding-email"
-							type="email" 
-							bind:value={email} 
-							placeholder="e.g. pritesh@example.com" 
-							class="w-full h-10 px-3 rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs" 
-						/>
-						{#if errors.email}
-							<p class="text-red-600 text-[10px] font-semibold mt-0.5">{errors.email}</p>
-						{/if}
-					</div>
-
-					<!-- Professional Title -->
-					<div class="space-y-1">
-						<label for="onboarding-title" class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans">Professional Title *</label>
-						<input 
-							id="onboarding-title"
-							type="text" 
-							bind:value={title} 
-							placeholder="e.g. Lead Developer / Student" 
-							class="w-full h-10 px-3 rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs" 
-						/>
-						{#if errors.title}
-							<p class="text-red-600 text-[10px] font-semibold mt-0.5">{errors.title}</p>
-						{/if}
-					</div>
-
-					<!-- Skills Matrix -->
-					<div class="space-y-1">
-						<label for="onboarding-skills" class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans">Skills Matrix (Add 2-3 mandatory) *</label>
-						<div class="flex gap-2">
-							<input 
-								id="onboarding-skills"
-								type="text" 
-								bind:value={skillInput} 
-								onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-								placeholder="Type skill & press Enter or click +" 
-								class="flex-1 h-10 px-3 rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs" 
-							/>
-							<button 
-								type="button" 
-								onclick={addSkill} 
-								class="h-10 w-10 flex items-center justify-center rounded-lg bg-[#A16207]/10 hover:bg-[#A16207]/20 text-[#A16207] transition-colors outline-none cursor-pointer"
-							>
-								<Plus class="size-4" />
-							</button>
-						</div>
-						{#if errors.skills}
-							<p class="text-red-600 text-[10px] font-semibold mt-0.5">{errors.skills}</p>
-						{/if}
-						
-						<!-- Added skills list -->
-						{#if skillsList.length > 0}
-							<div class="flex flex-wrap gap-1.5 mt-2">
-								{#each skillsList as skill}
-									<span class="inline-flex items-center gap-1.5 bg-[#A16207]/10 text-[#A16207] text-[10px] font-semibold px-2 py-0.5 rounded-md">
-										{skill}
-										<button 
-											type="button" 
-											onclick={() => removeSkill(skill)} 
-											class="text-[#A16207] hover:text-red-600 font-bold outline-none cursor-pointer"
-										>
-											×
-										</button>
-									</span>
-								{/each}
-							</div>
-						{/if}
-					</div>
-
-					<!-- Location, Availability, Job Type -->
-					<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-						<!-- Location -->
-						<div class="space-y-1">
-							<label for="onboarding-location" class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans">Location *</label>
-							<input 
-								id="onboarding-location"
-								type="text" 
-								bind:value={locationPref} 
-								placeholder="e.g. London" 
-								class="w-full h-10 px-3 rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] transition-all font-sans text-xs" 
-							/>
-							{#if errors.location}
-								<p class="text-red-600 text-[10px] font-semibold mt-0.5">{errors.location}</p>
-							{/if}
-						</div>
-
-						<!-- Availability -->
-						<div class="space-y-1">
-							<label for="onboarding-availability" class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans">Availability *</label>
-							<select 
-								id="onboarding-availability"
-								bind:value={availability} 
-								class="w-full h-10 px-2 rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] text-stone-900 focus:outline-hidden focus:border-[#A16207] transition-all font-sans text-xs"
-							>
-								<option value="Remote">Remote</option>
-								<option value="Onsite">Onsite</option>
-								<option value="Hybrid">Hybrid</option>
-							</select>
-						</div>
-
-						<!-- Job Type -->
-						<div class="space-y-1">
-							<label for="onboarding-jobtype" class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans">Job Type *</label>
-							<select 
-								id="onboarding-jobtype"
-								bind:value={jobType} 
-								class="w-full h-10 px-2 rounded-lg border border-[#E7E5E4] bg-[#FDFCFB] text-stone-900 focus:outline-hidden focus:border-[#A16207] transition-all font-sans text-xs"
-							>
-								<option value="Full-time">Full-time</option>
-								<option value="Part-time">Part-time</option>
-								<option value="Contract">Contract</option>
-								<option value="Internship">Internship</option>
-							</select>
-						</div>
-					</div>
-
-					<!-- Form Actions -->
-					<div class="flex items-center justify-end gap-3 pt-4 border-t border-[#E7E5E4]">
-						<button 
-							type="button" 
-							onclick={() => showOnboardingModal = false} 
-							class="px-4 py-2 border border-[#E7E5E4] text-stone-600 rounded-lg hover:bg-stone-50 transition-colors text-xs font-semibold cursor-pointer outline-none"
-						>
-							Cancel
-						</button>
-						<button 
-							type="submit" 
-							class="px-5 py-2 bg-[#A16207] text-[#F8F7F4] rounded-lg hover:bg-[#A16207]/90 transition-colors text-xs font-semibold cursor-pointer outline-none shadow-sm"
-						>
-							Launch Workspace
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	{/if}
 </div>

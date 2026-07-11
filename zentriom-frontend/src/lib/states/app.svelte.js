@@ -1,28 +1,14 @@
-let defaultUser = {
-	name: "",
-	email: "",
-	title: "",
-	skills: [],
-	preferences: {
-		location: "",
-		remote: "Remote",
-		jobType: "Full-time"
-	}
-};
-
-if (typeof window !== 'undefined') {
-	const saved = localStorage.getItem('zentriom_user');
-	if (saved) {
-		try {
-			defaultUser = JSON.parse(saved);
-		} catch (e) {}
-	}
-}
+import { authStore } from "$lib/stores/auth.svelte.js";
 
 export const appState = $state({
 	sidebarCollapsed: false,
 	mobileSidebarOpen: false,
 	pageTitle: "Dashboard",
 	currentRoute: "/dashboard",
-	user: defaultUser
+	get user() {
+		return authStore.user;
+	},
+	set user(value) {
+		authStore.user = value;
+	}
 });

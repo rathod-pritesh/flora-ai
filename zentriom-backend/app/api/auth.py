@@ -1,0 +1,325 @@
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+
+from sqlalchemy.orm import Session
+
+from app.services.auth_service import verify_google_token
+from app.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token
+    )
+from app.db.dependencies import get_db
+from app.models.users import User
+
+import random
+
+from datetime import datetime, timedelta
+
+from app.models.password_reset_otp import PasswordResetOTP
+
+from app.services.email_service import send_otp_email
+
+
+router = APIRouter()
+
+class GoogleLoginRequest(BaseModel):
+    token: str
+    
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+    
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class VerifyOTPRequest(BaseModel):
+    email: str
+    otp: str
+    
+class ResetPasswordRequest(BaseModel):
+    email: str
+    otp: str
+    password: str
+
+@router.post("/auth/google")
+def google_login(data: GoogleLoginRequest, db: Session = Depends(get_db)):
+    print("Received token:", data.token[:50])
+    
+    user_info = verify_google_token(data.token)
+    
+    user = db.query(User).filter(
+        User.google_id == user_info["google_id"]
+    ).first()
+    
+    if not user:
+        user = User(
+            google_id=user_info["google_id"],
+            email=user_info["email"],
+            name=user_info["name"],
+            picture=user_info["picture"]
+        )
+        
+        db.add(user)
+        
+    else:
+        user.name = user_info["name"]
+        user.picture = user_info["picture"]
+        
+    db.commit()
+    db.refresh(user)
+    
+    token = create_access_token(
+        str(user.id)
+    )
+    
+    return {
+        "success": True,
+        "token": token,
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "picture": user.picture
+        }
+    }
+    
+@router.post("/auth/register")
+def register(data: RegisterRequest, db: Session = Depends(get_db)):
+    existing_user = (
+        db.query(User)
+        .filter(User.email == data.email)
+        .first()
+    )
+    
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registerd"
+        )
+        
+    user = User(
+        name=data.name,
+        email=data.email,
+        password_hash=hash_password(
+            data.password
+        )
+    )
+    
+    db.add(user)
+    
+    db.commit()
+    
+    db.refresh(user)
+    
+    token = create_access_token(
+        str(user.id)
+    )
+    
+    return {
+        "success": True,
+        "token": token,
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "picture": user.picture
+        }
+    }
+    
+@router.post("/auth/login")
+def login(
+    data: LoginRequest,
+    db: Session = Depends(get_db)
+):
+    user = (
+        db.query(User)
+        .filter(User.email == data.email)
+        .first()
+    )
+    
+    if (
+        not user
+        or not user.password_hash
+        or not verify_password(
+            data.password,
+            user.password_hash
+        )
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+    
+    token = create_access_token(
+        str(user.id)
+    )
+    
+    return {
+        "success": True,
+        "token": token,
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.name,
+            "picture": user.picture
+        }
+    }
+    
+@router.post("/auth/forgot-password")
+def forgot_password(
+    data: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    
+    user = (
+        db.query(User)
+        .filter(User.email == data.email)
+        .first()
+    )
+    
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+        
+    db.query(
+        PasswordResetOTP
+    ).filter(
+        PasswordResetOTP.email == data.email
+    ).delete()
+    
+    otp = str(
+        random.randint(
+            1000,
+            9999
+        )
+    )
+    
+    otp_record = PasswordResetOTP(
+        email=data.email,
+        otp_code=otp,
+        expires_at=(
+            datetime.utcnow()
+            + timedelta(minutes=10)
+        )
+    )
+    
+    db.add(otp_record)
+    
+    db.commit()
+    
+    send_otp_email(
+        data.email,
+        otp
+    )
+    
+    return {
+        "success": True,
+        "message": "OTP sent successfully"
+    }
+    
+@router.post("/auth/verify-otp")
+def verify_otp(
+    data: VerifyOTPRequest,
+    db: Session = Depends(get_db)
+):
+    otp_record = (
+        db.query(
+            PasswordResetOTP
+        )
+        .filter(
+            PasswordResetOTP.email == data.email
+        )
+        .first()
+    )
+    
+    if not otp_record:
+        raise HTTPException(
+            status_code=404,
+            detail="OTP not found"
+        )
+        
+    if otp_record.otp_code != data.otp:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid OTP"
+        )
+        
+    if datetime.utcnow() > otp_record.expires_at:
+        raise HTTPException(
+            status_code=400,
+            detail="OTP expired"
+        )
+        
+    return {
+        "success": True
+    }
+    
+@router.post("/auth/reset-password")
+def reset_password(
+    data: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    otp_record = (
+        db.query(
+            PasswordResetOTP
+        )
+        .filter(
+            PasswordResetOTP.email == data.email
+        )
+        .first()
+    )
+    
+    if not otp_record:
+        raise HTTPException(
+            status_code=404,
+            detail="OTP not found"
+        )
+        
+    if otp_record.otp_code != data.otp:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid OTP"
+        )
+        
+    if datetime.utcnow() > otp_record.expires_at:
+        raise HTTPException(
+            status_code=400,
+            detail="OTP expired"
+        )
+        
+    user = (
+        db.query(User)
+        .filter(
+            User.email == data.email
+        )
+        .first()
+    )
+    
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+        
+    user.password_hash = hash_password(
+        data.password
+    )
+    
+    db.commit()
+    
+    db.delete(otp_record)
+    
+    db.commit()
+    
+    return {
+        "success": True,
+        "message": "Password reset successful"
+    }

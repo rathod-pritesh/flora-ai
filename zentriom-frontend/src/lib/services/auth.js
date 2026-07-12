@@ -1,5 +1,26 @@
 const API_URL = 'http://127.0.0.1:8000';
 
+function getToken() {
+	const stored = localStorage.getItem('auth');
+
+	if (!stored) return null;
+
+	try {
+		return JSON.parse(stored).token;
+	} catch {
+		return null;
+	}
+}
+
+export function getAuthHeaders() {
+	const token = getToken();
+
+	return {
+		'Content-Type': 'application/json',
+		Authorization: `Bearer ${token}`
+	}
+}
+
 export async function loginWithGoogle(idToken) {
 	console.log("Sending token to backend");
 	console.log(idToken.substring(0, 50));
@@ -164,4 +185,34 @@ export async function resetPassword(
 	}
 
 	return data;
+}
+
+export async function explainCode(code) {
+	const response = await fetch(
+		`${API_URL}/code-explainer`,
+		{
+			method: 'POST',
+			headers: getAuthHeaders(),
+			body: JSON.stringify({
+				code
+			})
+		}
+	);
+
+	return await response.json();
+}
+
+export async function getHistory() {
+	const response = await fetch(
+		`${API_URL}/history`,
+		{
+			headers: getAuthHeaders()
+		}
+	);
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch history')
+	}
+
+	return await response.json();
 }

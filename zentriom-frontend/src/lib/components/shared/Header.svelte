@@ -12,6 +12,7 @@
 		DropdownMenuSeparator,
 		DropdownMenuGroup
 	} from "$lib/components/ui/dropdown-menu/index.js";
+	import { toast } from "svelte-sonner";
 
 	import { goto } from "$app/navigation";
 
@@ -19,8 +20,9 @@
 		goto("/settings");
 	}
 
-	function handleLogOut() {
+	async function handleLogOut() {
 		logout();
+		toast.success('Logged out successfully');
 		goto('/')
 	}
 </script>

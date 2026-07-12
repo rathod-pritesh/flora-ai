@@ -16,6 +16,7 @@
 		ThumbsUp,
 		ThumbsDown
 	} from "lucide-svelte";
+	import { getAuthHeaders } from "$lib/services/auth";
 
 	// API Endpoint from environment variable
 	const apiBase = env.PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -42,21 +43,21 @@
 		},
 		{
 			title: "Bug Fix",
-			desc: "Scan stacktraces, diagnose root causes, and patch issues.",
+			desc: "AI-powered debugging assistance currently under development. Future support will include runtime analysis, stack trace interpretation, and intelligent fix suggestions.",
 			icon: Wrench,
-			comingSoon: true
+			underDevelopment: true
 		},
 		{
 			title: "Resume Review",
-			desc: "Get feedback on how to highlight skills for developer roles.",
+			desc: "Resume analysis and personalized improvement recommendations are currently under development.",
 			icon: FileText,
-			comingSoon: true
+			underDevelopment: true
 		},
 		{
 			title: "Job Match",
-			desc: "Browse relevant local opportunities based on your skills.",
+			desc: "Skill-based opportunity discovery and intelligent job matching are currently under development.",
 			icon: Briefcase,
-			comingSoon: true
+			underDevelopment: true
 		}
 	];
 
@@ -149,16 +150,16 @@
 		try {
 			const response = await fetch(`${apiBase}/chat`, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
+				headers: getAuthHeaders(),
 				body: JSON.stringify({
 					prompt: text
 				})
 			});
 
 			if (!response.ok) {
-				throw new Error("Failed to get response from Zentriom AI backend.");
+				throw new Error(
+					data.detail || 'Something went wrong. Please try again'
+				);
 			}
 
 			const data = await response.json();
@@ -346,12 +347,12 @@
 			<!-- Suggested Prompts Grid -->
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full px-4">
 				{#each suggestedCards as card}
-					{#if card.comingSoon}
+					{#if card.underDevelopment}
 						<div
 							class="relative flex flex-col text-left p-5 rounded-xl border border-stone-200 bg-stone-50 opacity-70 select-none outline-none"
 						>
 							<div class="absolute top-4 right-4 bg-stone-200 text-stone-600 border border-stone-300 text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full font-sans">
-								Coming Soon
+								UNDER DEVELOPMENT
 							</div>
 							<div class="p-2.5 rounded-lg bg-stone-100 text-stone-400 w-fit mb-4">
 								<card.icon class="size-5 shrink-0" />

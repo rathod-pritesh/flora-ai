@@ -13,7 +13,8 @@
 		ChevronRight,
 		User,
 		LogOut,
-		Settings
+		Settings,
+		FileText
 	} from 'lucide-svelte';
 	import { Avatar, AvatarFallback } from '$lib/components/ui/avatar/index.js';
 	import { replaceState } from '$app/navigation';
@@ -31,6 +32,7 @@
 	import { loginWithGoogle } from '$lib/services/auth.js';
 	import { setAuth } from '$lib/stores/auth.svelte.js';
 	import { initGoogleLogin } from '$lib/services/google.js';
+	import { toast } from 'svelte-sonner';
 
 	let activeSection = $state('');
 	let authTab = $state('login'); // "login" | "signup"
@@ -61,6 +63,7 @@
 
 	function handleLogOut() {
 		logout();
+		toast.success('Logged out successfully');
 		goto('/')
 	}
 
@@ -101,34 +104,40 @@
 
 	const features = [
 		{
-			name: 'AI Workspace',
-			desc: 'An intelligent canvas to brainstorm, write summaries, and draft documents.',
-			icon: Sparkles
+			name: 'LinkedIn Generator',
+			desc: 'Generate professional LinkedIn posts tailored to your experience, achievements, and learning journey.',
+			icon: Share2,
+			path: '/linkedin'
 		},
 		{
 			name: 'Grammar Assistant',
-			desc: 'Polishes tone, improves readability, and fixes syntax dynamically.',
-			icon: Languages
-		},
-		{
-			name: 'LinkedIn Generator',
-			desc: 'Creates engaging professional posts tailored by tone and context.',
-			icon: Share2
+			desc: 'Improve grammar, spelling, readability, and overall writing quality instantly.',
+			icon: Languages,
+			path: '/grammar'
 		},
 		{
 			name: 'Code Explanation',
-			desc: 'Monospace code block breakdown with detailed step-by-step logic.',
-			icon: Code
+			desc: 'Understand unfamiliar code with detailed step-by-step explanations and logic breakdowns.',
+			icon: Code,
+			path: '/code-explainer'
 		},
 		{
 			name: 'Bug Fix Assistant',
-			desc: 'Diagnoses runtime errors and stacktraces to propose verified patches.',
-			icon: Wrench
+			desc: 'Analyze errors, stack traces, and runtime issues with AI-powered debugging assistance.',
+			icon: Wrench,
+			underDevelopment: true
 		},
 		{
-			name: 'Job Discovery',
-			desc: 'Discovers target careers and calculates skill compatibility metrics.',
-			icon: Briefcase
+			name: 'Resume Review',
+			desc: 'Receive intelligent feedback on resume quality, strengths, and improvement opportunities.',
+			icon: FileText,
+			underDevelopment: true
+		},
+		{
+			name: 'Job Match',
+			desc: 'Discover relevant opportunities based on your skills, projects, and career goals.',
+			icon: Briefcase,
+			underDevelopment: true
 		}
 	];
 
@@ -344,17 +353,35 @@
 			</div>
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{#each features as feat}
-					<div
-						class="group border border-[#E7E5E4] bg-[#FDFCFB] rounded-xl p-6 shadow-2xs hover:border-[#A16207]/30 transition-all"
-					>
+					{#if feat.underDevelopment}
 						<div
-							class="p-2.5 rounded-lg bg-stone-100 text-stone-600 group-hover:bg-[#A16207]/10 group-hover:text-[#A16207] transition-all w-fit mb-4"
+							class="relative border border-[#E7E5E4] bg-[#FDFCFB] rounded-xl p-6 shadow-2xs opacity-70 select-none cursor-default"
 						>
-							<feat.icon class="size-5 shrink-0" />
+							<div class="absolute top-4 right-4 bg-stone-100 text-stone-500 border border-stone-200 text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full font-sans">
+								UNDER DEVELOPMENT
+							</div>
+							<div
+								class="p-2.5 rounded-lg bg-stone-100 text-stone-400 w-fit mb-4"
+							>
+								<feat.icon class="size-5 shrink-0" />
+							</div>
+							<h3 class="text-base font-bold text-stone-400 mb-2">{feat.name}</h3>
+							<p class="text-stone-400 text-xs leading-relaxed font-sans">{feat.desc}</p>
 						</div>
-						<h3 class="text-base font-bold text-stone-900 mb-2">{feat.name}</h3>
-						<p class="text-stone-400 text-xs leading-relaxed font-sans">{feat.desc}</p>
-					</div>
+					{:else}
+						<a
+							href={feat.path}
+							class="group block border border-[#E7E5E4] bg-[#FDFCFB] rounded-xl p-6 shadow-2xs hover:border-[#A16207]/30 transition-all hover:shadow-xs outline-none"
+						>
+							<div
+								class="p-2.5 rounded-lg bg-stone-100 text-stone-600 group-hover:bg-[#A16207]/10 group-hover:text-[#A16207] transition-all w-fit mb-4"
+							>
+								<feat.icon class="size-5 shrink-0" />
+							</div>
+							<h3 class="text-base font-bold text-stone-900 mb-2 group-hover:text-[#A16207] transition-all">{feat.name}</h3>
+							<p class="text-stone-500 text-xs leading-relaxed font-sans">{feat.desc}</p>
+						</a>
+					{/if}
 				{/each}
 			</div>
 		</div>

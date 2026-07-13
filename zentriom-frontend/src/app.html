@@ -3,16 +3,20 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="text-scale" content="scale" />
 		%sveltekit.head%
 		<script src="https://accounts.google.com/gsi/client" async defer></script>
 		<script>
 			try {
-				const theme = localStorage.getItem("zentriom_theme") || "system";
-				if (theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-					document.documentElement.classList.add("dark");
+				const theme = localStorage.getItem('zentriom_theme') || 'light';
+				if (
+					theme === 'dark' ||
+					(theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+				) {
+					document.documentElement.classList.add('dark');
 				} else {
-					document.documentElement.classList.remove("dark");
+					document.documentElement.classList.remove('dark');
 				}
 			} catch (_) {}
 		</script>

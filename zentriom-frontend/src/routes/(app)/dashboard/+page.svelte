@@ -16,10 +16,8 @@
 		ThumbsUp,
 		ThumbsDown
 	} from "lucide-svelte";
-	import { getAuthHeaders } from "$lib/services/auth";
-
-	// API Endpoint from environment variable
-	const apiBase = env.PUBLIC_API_URL || "http://127.0.0.1:8000";
+	import { getAuthHeaders, sendChatMessage } from "$lib/services/auth";
+	import { toast } from "svelte-sonner";
 
 	// Suggested action cards list
 	const suggestedCards = [
@@ -148,21 +146,7 @@
 		}, 50);
 
 		try {
-			const response = await fetch(`${apiBase}/chat`, {
-				method: "POST",
-				headers: getAuthHeaders(),
-				body: JSON.stringify({
-					prompt: text
-				})
-			});
-
-			if (!response.ok) {
-				throw new Error(
-					data.detail || 'Something went wrong. Please try again'
-				);
-			}
-
-			const data = await response.json();
+			const data = await sendChatMessage(text);
 			const responseText = data.response;
 
 			const aiMsg = {
@@ -179,13 +163,14 @@
 			const errorMsg = {
 				id: Date.now() + 1,
 				sender: 'ai',
-				text: "⚠️ **Error:** Unable to connect to the Zentriom AI backend. Please ensure the server is running at http://127.0.0.1:8000 and try again.",
+				text: "⚠️ **Error:** Unable to connect to the Zentriom AI backend.",
 				timestamp: getCurrentTime(),
 				liked: false,
 				disliked: false,
 				isError: true
 			};
 			messages = [...messages, errorMsg];
+			toast.error('Unable to contact Zentriom AI. Please try again.');
 		} finally {
 			isTyping = false;
 			setTimeout(() => {
@@ -311,19 +296,19 @@
 
 <div class="flex flex-col min-h-[calc(100vh-8rem)] relative">
 	<!-- Chat Header -->
-	<div class="flex items-center justify-between border-b border-stone-200 bg-white p-4 shadow-xs rounded-xl mb-6">
+	<div class="flex items-center justify-between border-b border-border bg-card p-4 shadow-xs rounded-xl mb-6">
 		<div class="flex items-center gap-2">
-			<div class="p-1.5 rounded-lg bg-[#A16207]/10 text-[#A16207]">
-				<Sparkles class="size-5 shrink-0" />
+			<div class="p-1 shrink-0 select-none">
+				<img src="/zentriom_logo_for_dark_theme.png" class="size-6 object-contain" alt="Zentriom Logo" />
 			</div>
-			<span class="text-base font-bold text-stone-900 font-sans">Zentriom AI</span>
+			<span class="text-base font-bold text-foreground font-sans">Zentriom AI</span>
 		</div>
 
 		<div class="flex items-center gap-3 relative">
 			<!-- New Chat Button -->
 			<button
 				onclick={handleNewChat}
-				class="flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50 select-none outline-none cursor-pointer"
+				class="flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted select-none outline-none cursor-pointer"
 			>
 				<Plus class="size-3.5" />
 				<span>New Chat</span>
@@ -336,10 +321,10 @@
 		<!-- Welcome State -->
 		<div class="flex-1 flex flex-col items-center justify-center py-12 max-w-4xl mx-auto w-full">
 			<div class="text-center space-y-3 mb-10">
-				<h2 class="text-3xl font-bold tracking-tight text-stone-900 font-sans md:text-4xl">
+				<h2 class="text-3xl font-bold tracking-tight text-foreground font-sans md:text-4xl">
 					{welcome.greeting}, {appState.user?.name ? appState.user.name.split(' ')[0] : 'Pritesh'} 👋
 				</h2>
-				<p class="text-stone-500 font-sans text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+				<p class="text-muted-foreground font-sans text-sm md:text-base max-w-xl mx-auto leading-relaxed">
 					{randomSubtitle}
 				</p>
 			</div>
@@ -349,33 +334,33 @@
 				{#each suggestedCards as card}
 					{#if card.underDevelopment}
 						<div
-							class="relative flex flex-col text-left p-5 rounded-xl border border-stone-200 bg-stone-50 opacity-70 select-none outline-none"
+							class="relative flex flex-col text-left p-5 rounded-xl border border-border bg-muted opacity-70 select-none outline-none"
 						>
-							<div class="absolute top-4 right-4 bg-stone-200 text-stone-600 border border-stone-300 text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full font-sans">
+							<div class="absolute top-4 right-4 bg-muted text-muted-foreground border border-border text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full font-sans">
 								UNDER DEVELOPMENT
 							</div>
-							<div class="p-2.5 rounded-lg bg-stone-100 text-stone-400 w-fit mb-4">
+							<div class="p-2.5 rounded-lg bg-background text-muted-foreground w-fit mb-4">
 								<card.icon class="size-5 shrink-0" />
 							</div>
-							<h3 class="text-sm font-semibold text-stone-400 font-sans mb-1">
+							<h3 class="text-sm font-semibold text-muted-foreground/80 font-sans mb-1">
 								{card.title}
 							</h3>
-							<p class="text-xs text-stone-400 font-sans leading-relaxed flex-1">
+							<p class="text-xs text-muted-foreground font-sans leading-relaxed flex-1">
 								{card.desc}
 							</p>
 						</div>
 					{:else}
 						<button
 							onclick={() => goto(card.path)}
-							class="flex flex-col text-left p-5 rounded-xl border border-stone-200 bg-white hover:border-[#A16207]/40 hover:shadow-sm hover:shadow-[#A16207]/5 transition-all group outline-none cursor-pointer"
+							class="flex flex-col text-left p-5 rounded-xl border border-border bg-card hover:border-[#A16207]/40 hover:shadow-sm hover:shadow-[#A16207]/5 transition-all group outline-none cursor-pointer"
 						>
-							<div class="p-2.5 rounded-lg bg-stone-100 text-stone-600 group-hover:bg-[#A16207]/10 group-hover:text-[#A16207] transition-colors w-fit mb-4">
+							<div class="p-2.5 rounded-lg bg-muted text-foreground group-hover:bg-[#A16207]/10 group-hover:text-[#A16207] transition-colors w-fit mb-4">
 								<card.icon class="size-5 shrink-0" />
 							</div>
-							<h3 class="text-sm font-semibold text-stone-800 font-sans mb-1 group-hover:text-[#A16207] transition-colors">
+							<h3 class="text-sm font-semibold text-foreground font-sans mb-1 group-hover:text-[#A16207] transition-colors">
 								{card.title}
 							</h3>
-							<p class="text-xs text-stone-400 font-sans leading-relaxed flex-1">
+							<p class="text-xs text-muted-foreground font-sans leading-relaxed flex-1">
 								{card.desc}
 							</p>
 						</button>
@@ -385,13 +370,13 @@
 		</div>
 	{:else}
 		<!-- Chat Area -->
-		<div class="flex-1 space-y-6 pb-24 max-w-4xl mx-auto w-full px-4">
+		<div class="flex-1 space-y-6 pb-24 max-w-4xl mx-auto w-full px-4 text-foreground">
 			{#each messages as msg}
 				<div class="flex gap-4 {msg.sender === 'user' ? 'justify-end' : 'justify-start'}">
 					<!-- AI Avatar (shows on left) -->
 					{#if msg.sender === 'ai'}
-						<div class="size-9 rounded-full bg-[#A16207]/10 flex items-center justify-center border border-[#A16207]/20 shrink-0 text-[#A16207]">
-							<Sparkles class="size-4" />
+						<div class="size-9 rounded-full bg-card flex items-center justify-center border border-border shrink-0 select-none">
+							<img src="/zentriom_logo_for_dark_theme.png" class="size-5 object-contain" alt="Zentriom Logo" />
 						</div>
 					{/if}
 
@@ -399,27 +384,27 @@
 					<div class="flex flex-col max-w-[85%] sm:max-w-[75%] gap-1">
 						<div class="rounded-2xl px-4 py-3 text-sm font-sans leading-relaxed border shadow-xs
 							{msg.sender === 'user' 
-								? 'bg-stone-900 text-stone-50 border-stone-800 rounded-tr-none' 
+								? 'bg-stone-900 dark:bg-stone-800 text-stone-50 border-stone-800 dark:border-stone-700 rounded-tr-none' 
 								: msg.isError
 									? 'bg-red-50 text-red-800 border-red-200 rounded-tl-none font-medium'
-									: 'bg-white text-stone-800 border-stone-200 rounded-tl-none'}"
+									: 'bg-card text-foreground border-border rounded-tl-none'}"
 						>
 							{#if msg.sender === 'ai'}
 								{#each parseMarkdown(msg.text) as block}
 									{#if block.type === 'code'}
-										<div class="my-3 rounded-lg overflow-hidden border border-stone-200 font-mono text-xs shadow-inner">
+										<div class="my-3 rounded-lg overflow-hidden border border-border font-mono text-xs shadow-inner">
 											{#if block.lang}
-												<div class="bg-stone-100 border-b border-stone-200 px-3 py-1.5 text-[10px] text-stone-500 font-sans font-semibold flex items-center justify-between">
+												<div class="bg-muted border-b border-border px-3 py-1.5 text-[10px] text-muted-foreground font-sans font-semibold flex items-center justify-between">
 													<span>{block.lang.toUpperCase()}</span>
 													<button 
 														onclick={() => handleCopyMessage(msg.id + block.code.length, block.code)}
-														class="hover:text-stone-800 transition-colors flex items-center gap-1 font-normal outline-none cursor-pointer"
+														class="hover:text-[#A16207] transition-colors flex items-center gap-1 font-normal outline-none cursor-pointer"
 													>
 														Copy Code
 													</button>
 												</div>
 											{/if}
-											<pre class="bg-stone-50 p-3 overflow-x-auto text-stone-800 leading-relaxed"><code>{block.code}</code></pre>
+											<pre class="bg-muted/50 p-3 overflow-x-auto text-foreground leading-relaxed"><code>{block.code}</code></pre>
 										</div>
 									{:else}
 										<div class="space-y-2">
@@ -439,7 +424,7 @@
 						</div>
 
 						<!-- Metadata & Actions -->
-						<div class="flex items-center gap-3 px-1 mt-1 text-[10px] text-stone-400 font-sans">
+						<div class="flex items-center gap-3 px-1 mt-1 text-[10px] text-muted-foreground font-sans">
 							<span>{msg.timestamp}</span>
 
 							{#if msg.sender === 'ai' && !msg.isError}
@@ -448,7 +433,7 @@
 								<!-- Copy Button -->
 								<button 
 									onclick={() => handleCopyMessage(msg.id, msg.text)}
-									class="hover:text-stone-700 transition-colors flex items-center gap-0.5 outline-none cursor-pointer"
+									class="hover:text-[#A16207] transition-colors flex items-center gap-0.5 outline-none cursor-pointer"
 									title="Copy message"
 								>
 									{#if copiedMessageId === msg.id}
@@ -465,14 +450,14 @@
 								<!-- Like/Dislike -->
 								<button 
 									onclick={() => handleLike(msg.id)}
-									class="hover:text-stone-700 transition-colors flex items-center gap-0.5 outline-none cursor-pointer {msg.liked ? 'text-[#A16207]' : ''}"
+									class="hover:text-[#A16207] transition-colors flex items-center gap-0.5 outline-none cursor-pointer {msg.liked ? 'text-[#A16207]' : ''}"
 									title="Like"
 								>
 									<ThumbsUp class="size-3" />
 								</button>
 								<button 
 									onclick={() => handleDislike(msg.id)}
-									class="hover:text-stone-700 transition-colors flex items-center gap-0.5 outline-none cursor-pointer {msg.disliked ? 'text-red-600' : ''}"
+									class="hover:text-red-650 transition-colors flex items-center gap-0.5 outline-none cursor-pointer {msg.disliked ? 'text-red-600' : ''}"
 									title="Dislike"
 								>
 									<ThumbsDown class="size-3" />
@@ -483,7 +468,7 @@
 
 					<!-- User Avatar (shows on right) -->
 					{#if msg.sender === 'user'}
-						<div class="size-9 rounded-full bg-stone-200 flex items-center justify-center border border-stone-300 shrink-0 text-stone-700 text-xs font-bold font-sans">
+						<div class="size-9 rounded-full bg-muted flex items-center justify-center border border-border shrink-0 text-foreground text-xs font-bold font-sans">
 							{getInitials(appState.user?.name)}
 						</div>
 					{/if}
@@ -493,18 +478,18 @@
 			<!-- Thinking/Typing State -->
 			{#if isTyping}
 				<div class="flex gap-4 justify-start">
-					<div class="size-9 rounded-full bg-[#A16207]/10 flex items-center justify-center border border-[#A16207]/20 shrink-0 text-[#A16207] animate-pulse">
-						<Sparkles class="size-4" />
+					<div class="size-9 rounded-full bg-card flex items-center justify-center border border-border shrink-0 animate-pulse select-none">
+						<img src="/zentriom_logo_for_dark_theme.png" class="size-5 object-contain" alt="Zentriom Logo" />
 					</div>
 					<div class="flex flex-col gap-1">
-						<div class="bg-white border border-stone-200 rounded-2xl rounded-tl-none px-4 py-3.5 shadow-xs">
+						<div class="bg-card border border-border rounded-2xl rounded-tl-none px-4 py-3.5 shadow-xs">
 							<div class="flex items-center gap-1.5 py-1">
 								<span class="size-1.5 rounded-full bg-stone-400 animate-bounce" style="animation-delay: 0ms"></span>
 								<span class="size-1.5 rounded-full bg-stone-400 animate-bounce" style="animation-delay: 150ms"></span>
 								<span class="size-1.5 rounded-full bg-stone-400 animate-bounce" style="animation-delay: 300ms"></span>
 							</div>
 						</div>
-						<span class="text-[10px] text-stone-400 font-sans px-1">Zentriom AI is thinking...</span>
+						<span class="text-[10px] text-muted-foreground font-sans px-1">Zentriom AI is thinking...</span>
 					</div>
 				</div>
 			{/if}
@@ -512,24 +497,24 @@
 	{/if}
 
 	<!-- Sticky Bottom Input -->
-	<div class="sticky bottom-0 bg-[#FAFAF9] -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8 pt-4 pb-6 z-30">
+	<div class="sticky bottom-0 bg-background -mx-4 px-4 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8 pt-4 pb-6 z-30">
 		<div class="max-w-4xl mx-auto w-full">
-			<div class="relative flex flex-col w-full rounded-2xl border border-stone-200 bg-white shadow-sm focus-within:border-[#A16207] focus-within:ring-2 focus-within:ring-[#A16207]/10 transition-all p-3 gap-2">
+			<div class="relative flex flex-col w-full rounded-2xl border border-border bg-card shadow-sm focus-within:border-[#A16207] focus-within:ring-2 focus-within:ring-[#A16207]/10 transition-all p-3 gap-2">
 				<!-- Textarea -->
 				<textarea
 					bind:value={inputValue}
 					onkeydown={handleKeyDown}
 					placeholder="Ask Zentriom anything..."
-					class="w-full bg-transparent border-0 outline-none resize-none font-sans text-sm text-stone-850 placeholder:text-stone-400 min-h-[48px] max-h-[180px] focus:ring-0 p-1 leading-relaxed field-sizing-content"
+					class="w-full bg-transparent border-0 outline-none resize-none font-sans text-sm text-foreground placeholder:text-muted-foreground min-h-[48px] max-h-[180px] focus:ring-0 p-1 leading-relaxed field-sizing-content"
 					rows="1"
 				></textarea>
 
 				<!-- Action Buttons Row -->
-				<div class="flex items-center justify-end border-t border-stone-100 pt-2 text-stone-450">
+				<div class="flex items-center justify-end border-t border-border pt-2 text-muted-foreground">
 					<div class="flex items-center gap-3">
 						<!-- Shortcut Hint -->
-						<span class="hidden sm:inline text-[10px] text-stone-400 font-sans select-none">
-							Press <kbd class="px-1 py-0.5 rounded bg-stone-100 border border-stone-200 text-stone-500 font-mono text-[9px] shadow-2xs">Enter</kbd> to send
+						<span class="hidden sm:inline text-[10px] text-muted-foreground font-sans select-none">
+							Press <kbd class="px-1 py-0.5 rounded bg-muted border border-border text-muted-foreground font-mono text-[9px] shadow-2xs">Enter</kbd> to send
 						</span>
 
 						<!-- Send Button -->
@@ -539,7 +524,7 @@
 							class="flex size-8 items-center justify-center rounded-lg transition-all select-none outline-none cursor-pointer
 								{inputValue.trim() && !isTyping
 									? 'bg-[#A16207] text-white hover:bg-[#A16207]/90' 
-									: 'bg-stone-100 text-stone-300 pointer-events-none'}"
+									: 'bg-muted text-muted-foreground/50 pointer-events-none'}"
 							title="Send message"
 						>
 							<Send class="size-4" />

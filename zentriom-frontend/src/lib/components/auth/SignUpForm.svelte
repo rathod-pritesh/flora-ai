@@ -63,11 +63,11 @@
 
 			setAuth(result.user, result.token);
 
-			toast.success('Account created successfully');
+			toast.success('Account created successfully.');
 
 			goto('/dashboard');
 		} catch (error) {
-			toast.error('Registration failed!');
+			toast.error(error.message || 'Registration failed.');
 		}
 	}
 </script>
@@ -78,7 +78,7 @@
 	<div class="space-y-1">
 		<label
 			for="signup-name"
-			class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+			class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 			>Full Name</label
 		>
 		<input
@@ -87,8 +87,8 @@
 			bind:value={fullName}
 			onblur={() => (nameTouched = true)}
 			placeholder="e.g. Pritesh Rathod"
-			class="w-full h-10 px-3 rounded-lg border bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
-				{nameErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-stone-200'}"
+			class="w-full h-10 px-3 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
+				{nameErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border'}"
 		/>
 		{#if nameErrorMsg}
 			<p class="text-red-500 text-[10px] font-semibold">{nameErrorMsg}</p>
@@ -99,7 +99,7 @@
 	<div class="space-y-1">
 		<label
 			for="signup-email"
-			class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+			class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 			>Email Address</label
 		>
 		<input
@@ -108,8 +108,8 @@
 			bind:value={email}
 			onblur={() => (emailTouched = true)}
 			placeholder="e.g. pritesh@example.com"
-			class="w-full h-10 px-3 rounded-lg border bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
-				{emailErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-stone-200'}"
+			class="w-full h-10 px-3 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
+				{emailErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border'}"
 		/>
 		{#if emailErrorMsg}
 			<p class="text-red-500 text-[10px] font-semibold">{emailErrorMsg}</p>
@@ -120,7 +120,7 @@
 	<div class="space-y-1">
 		<label
 			for="signup-password"
-			class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+			class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 			>Password</label
 		>
 		<div class="relative">
@@ -130,15 +130,15 @@
 				bind:value={password}
 				onblur={() => (passwordTouched = true)}
 				placeholder="••••••••"
-				class="w-full h-10 pl-3 pr-10 rounded-lg border bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
+				class="w-full h-10 pl-3 pr-10 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
 					{passwordErrorMsg
 					? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-					: 'border-stone-200'}"
+					: 'border-border'}"
 			/>
 			<button
 				type="button"
 				onclick={() => (showPassword = !showPassword)}
-				class="absolute right-3 top-3 text-stone-455 hover:text-stone-700 outline-none cursor-pointer"
+				class="absolute right-3 top-3 text-muted-foreground hover:text-foreground outline-none cursor-pointer"
 			>
 				{#if showPassword}
 					<EyeOff class="size-3.5" />
@@ -156,7 +156,7 @@
 	<div class="space-y-1">
 		<label
 			for="signup-confirm-password"
-			class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+			class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 			>Confirm Password</label
 		>
 		<input
@@ -165,10 +165,10 @@
 			bind:value={confirmPassword}
 			onblur={() => (confirmTouched = true)}
 			placeholder="••••••••"
-			class="w-full h-10 px-3 rounded-lg border bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
+			class="w-full h-10 px-3 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
 				{confirmErrorMsg
 				? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-				: 'border-stone-200'}"
+				: 'border-border'}"
 		/>
 		{#if confirmErrorMsg}
 			<p class="text-red-500 text-[10px] font-semibold">{confirmErrorMsg}</p>
@@ -178,7 +178,7 @@
 	<button
 		type="submit"
 		disabled={isFormInvalid}
-		class="w-full h-11 bg-[#A16207] text-[#F8F7F4] rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
+		class="w-full h-11 bg-[#A16207] text-primary-foreground rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
 			{isFormInvalid ? 'opacity-60 pointer-events-none cursor-not-allowed' : ''}"
 	>
 		<span>Create Account</span>

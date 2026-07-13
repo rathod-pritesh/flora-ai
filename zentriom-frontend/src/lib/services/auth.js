@@ -1,4 +1,4 @@
-const API_URL = 'http://127.0.0.1:8000';
+import { API_URL } from "$lib/config/api";
 
 function getToken() {
 	const stored = localStorage.getItem('auth');
@@ -212,6 +212,81 @@ export async function getHistory() {
 
 	if (!response.ok) {
 		throw new Error('Failed to fetch history')
+	}
+
+	return await response.json();
+}
+
+
+export async function deleteHistory(id) {
+	const response = await fetch(
+		`${API_URL}/history/${id}`,
+		{
+			method:'DELETE',
+			headers: getAuthHeaders()
+		}
+	);
+
+	if (!response.ok) {
+		throw new Error('Failed to delete history')
+	}
+
+	return await response.json();
+}
+
+export async function clearHistory() {
+	const response = await fetch(
+		`${API_URL}/history`,
+		{
+			method:'DELETE',
+			headers: getAuthHeaders()
+		}
+	);
+
+	if (!response.ok) {
+		throw new Error('Failed to delete history')
+	}
+
+	return await response.json();
+}
+
+export async function sendChatMessage(prompt) {
+	const response = await fetch(`${API_URL}/chat`, {
+		method: 'POST',
+		headers: getAuthHeaders(),
+		body: JSON.stringify({ prompt })
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to send chat message');
+	}
+
+	return await response.json();
+}
+
+export async function checkGrammar(text) {
+	const response = await fetch(`${API_URL}/grammar`, {
+		method: 'POST',
+		headers: getAuthHeaders(),
+		body: JSON.stringify({ text })
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to check grammar');
+	}
+
+	return await response.json();
+}
+
+export async function generateLinkedInPost(payload) {
+	const response = await fetch(`${API_URL}/linkedin`, {
+		method: 'POST',
+		headers: getAuthHeaders(),
+		body: JSON.stringify(payload)
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to generate LinkedIn post');
 	}
 
 	return await response.json();

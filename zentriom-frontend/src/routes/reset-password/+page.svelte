@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resetPassword } from '$lib/services/auth';
 	import { ArrowLeft, Eye, EyeOff } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 
 	let password = $state('');
 	let confirmPassword = $state('');
@@ -49,47 +50,49 @@
 			sessionStorage.removeItem('reset_otp');
 
 			successMessage = 'Password changed successfully';
+			toast.success('Password updated successfully.');
 
 			setTimeout(() => {
 				goto('/?showAuth=true');
 			}, 1500);
 		} catch (error) {
 			errorMessage = error.message;
+			toast.error(error.message || 'Password reset failed.');
 		}
 	}
 </script>
 
 <div
-	class="min-h-screen bg-[#F8F7F4] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 text-[#1C1917] font-sans selection:bg-[#A16207]/20 selection:text-[#A16207]"
+	class="min-h-screen bg-background flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 text-foreground font-sans selection:bg-[#A16207]/20 selection:text-[#A16207]"
 >
 	<div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
 		<div class="flex items-center justify-center gap-3">
 			<img src="/zentriom_logo_for_dark_theme.png" class="size-11 object-contain" alt="Zentriom" />
-			<span class="text-xl font-bold tracking-tight text-[#1C1917] font-sans">
+			<span class="text-xl font-bold tracking-tight text-foreground font-sans">
 				<a href="/">Zentriom</a>
 			</span>
 		</div>
 	</div>
 
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
-		<div class="bg-white py-8 px-6 shadow-sm border border-[#E7E5E4] rounded-2xl space-y-6">
+		<div class="bg-card py-8 px-6 shadow-sm border border-border rounded-2xl space-y-6">
 			<div class="space-y-2">
-				<h2 class="text-xl font-bold text-stone-900 font-sans">Reset Password</h2>
-				<p class="text-xs text-stone-500 font-sans leading-relaxed">
+				<h2 class="text-xl font-bold text-foreground font-sans">Reset Password</h2>
+				<p class="text-xs text-muted-foreground font-sans leading-relaxed">
 					Create a new password for your account.
 				</p>
 			</div>
 
 			{#if successMessage}
 				<div
-					class="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-lg border border-emerald-200"
+					class="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-lg border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
 				>
 					{successMessage}
 				</div>
 			{/if}
 
 			{#if errorMessage}
-				<div class="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+				<div class="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20">
 					{errorMessage}
 				</div>
 			{/if}
@@ -99,7 +102,7 @@
 				<div class="space-y-1">
 					<label
 						for="reset-password"
-						class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+						class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 						>New Password</label
 					>
 					<div class="relative">
@@ -109,15 +112,15 @@
 							bind:value={password}
 							onblur={() => (passwordTouched = true)}
 							placeholder="••••••••"
-							class="w-full h-10 pl-3 pr-10 rounded-lg border bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
+							class="w-full h-10 pl-3 pr-10 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
 								{passwordErrorMsg
 								? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-								: 'border-stone-200'}"
+								: 'border-border'}"
 						/>
 						<button
 							type="button"
 							onclick={() => (showPassword = !showPassword)}
-							class="absolute right-3 top-3 text-stone-450 hover:text-stone-700 outline-none cursor-pointer"
+							class="absolute right-3 top-3 text-muted-foreground hover:text-foreground outline-none cursor-pointer"
 						>
 							{#if showPassword}
 								<EyeOff class="size-3.5" />
@@ -135,7 +138,7 @@
 				<div class="space-y-1">
 					<label
 						for="reset-confirm"
-						class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+						class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 						>Confirm New Password</label
 					>
 					<div class="relative">
@@ -145,15 +148,15 @@
 							bind:value={confirmPassword}
 							onblur={() => (confirmTouched = true)}
 							placeholder="••••••••"
-							class="w-full h-10 pl-3 pr-10 rounded-lg border bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
+							class="w-full h-10 pl-3 pr-10 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
 								{confirmErrorMsg
 								? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-								: 'border-stone-200'}"
+								: 'border-border'}"
 						/>
 						<button
 							type="button"
 							onclick={() => (showConfirmPassword = !showConfirmPassword)}
-							class="absolute right-3 top-3 text-stone-450 hover:text-stone-700 outline-none cursor-pointer"
+							class="absolute right-3 top-3 text-muted-foreground hover:text-foreground outline-none cursor-pointer"
 						>
 							{#if showConfirmPassword}
 								<EyeOff class="size-3.5" />
@@ -170,7 +173,7 @@
 				<button
 					type="submit"
 					disabled={isFormInvalid}
-					class="w-full h-11 bg-[#A16207] text-[#F8F7F4] rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
+					class="w-full h-11 bg-[#A16207] text-primary-foreground rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
 						{isFormInvalid ? 'opacity-60 pointer-events-none cursor-not-allowed' : ''}"
 				>
 					Reset Password

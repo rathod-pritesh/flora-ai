@@ -34,9 +34,9 @@
 	});
 </script>
 
-<div class="flex h-screen w-screen overflow-hidden bg-[#FAFAF9]">
+<div class="flex h-screen w-screen overflow-hidden bg-background text-foreground">
 	<!-- Desktop Sidebar -->
-	<div class="hidden lg:block h-full shrink-0 border-r border-stone-200">
+	<div class="hidden lg:block h-full shrink-0 border-r border-border">
 		<Sidebar />
 	</div>
 
@@ -52,7 +52,7 @@
 	<!-- Main Workspace Frame -->
 	<div class="flex flex-1 flex-col overflow-hidden">
 		<Header />
-		<main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-[#FAFAF9]">
+		<main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background">
 			{@render children?.()}
 		</main>
 	</div>

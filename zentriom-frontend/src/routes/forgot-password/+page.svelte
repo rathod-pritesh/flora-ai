@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
 	import { forgotPassword, verifyOtp } from '$lib/services/auth';
+	import { toast } from 'svelte-sonner';
 
 	let email = $state('');
 	let emailTouched = $state(false);
@@ -34,6 +35,7 @@
 			otpSent = true;
 		} catch (error) {
 			errorMessage = error.message;
+			toast.error(error.message || 'Failed to send OTP.');
 		}
 	}
 
@@ -71,27 +73,28 @@
 			goto('/reset-password');
 		} catch (error) {
 			errorMessage = error.message;
+			toast.error(error.message || 'OTP verification failed.');
 		}
 	}
 </script>
 
 <div
-	class="min-h-screen bg-[#F8F7F4] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 text-[#1C1917] font-sans selection:bg-[#A16207]/20 selection:text-[#A16207]"
+	class="min-h-screen bg-background flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 text-foreground font-sans selection:bg-[#A16207]/20 selection:text-[#A16207]"
 >
 	<div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
 		<div class="flex items-center justify-center gap-3">
 			<img src="/zentriom_logo_for_dark_theme.png" class="size-11 object-contain" alt="Zentriom" />
-			<span class="text-xl font-bold tracking-tight text-[#1C1917] font-sans">
+			<span class="text-xl font-bold tracking-tight text-foreground font-sans">
 				<a href="/">Zentriom</a>
 			</span>
 		</div>
 	</div>
 
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
-		<div class="bg-white py-8 px-6 shadow-sm border border-[#E7E5E4] rounded-2xl space-y-6">
+		<div class="bg-card py-8 px-6 shadow-sm border border-border rounded-2xl space-y-6">
 			<div class="space-y-2">
-				<h2 class="text-xl font-bold text-stone-900 font-sans">Forgot Password</h2>
-				<p class="text-xs text-stone-500 font-sans leading-relaxed">
+				<h2 class="text-xl font-bold text-foreground font-sans">Forgot Password</h2>
+				<p class="text-xs text-muted-foreground font-sans leading-relaxed">
 					Enter your registered email address to receive a verification code.
 				</p>
 			</div>
@@ -101,7 +104,7 @@
 					<div class="space-y-1">
 						<label
 							for="forgot-email"
-							class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+							class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 							>Email Address</label
 						>
 						<input
@@ -110,8 +113,8 @@
 							bind:value={email}
 							onblur={() => (emailTouched = true)}
 							placeholder="e.g. pritesh@example.com"
-							class="w-full h-10 px-3 rounded-lg border bg-[#FDFCFB] text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
-								{emailErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-stone-200'}"
+							class="w-full h-10 px-3 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
+								{emailErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border'}"
 						/>
 						{#if emailErrorMsg}
 							<p class="text-red-500 text-[10px] font-semibold">{emailErrorMsg}</p>
@@ -121,7 +124,7 @@
 					<button
 						type="submit"
 						disabled={!email.trim() || !!emailErrorMsg}
-						class="w-full h-11 bg-[#A16207] text-[#F8F7F4] rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
+						class="w-full h-11 bg-[#A16207] text-primary-foreground rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
 							{!email.trim() || !!emailErrorMsg ? 'opacity-60 pointer-events-none cursor-not-allowed' : ''}"
 					>
 						Send OTP
@@ -131,7 +134,7 @@
 				<form onsubmit={handleVerifyOtp} class="space-y-4">
 					<div class="space-y-2">
 						<label
-							class="block text-[10px] font-bold text-stone-700 tracking-wider uppercase font-sans"
+							class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 							>Enter Verification Code</label
 						>
 
@@ -144,7 +147,7 @@
 									value={otpValues[index]}
 									oninput={(e) => handleOtpInput(index, e)}
 									onkeydown={(e) => handleOtpKeyDown(index, e)}
-									class="w-12 h-12 text-center text-lg font-bold border border-stone-200 rounded-lg bg-[#FDFCFB] text-stone-900 focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans"
+									class="w-12 h-12 text-center text-lg font-bold border border-border rounded-lg bg-card text-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans"
 								/>
 							{/each}
 						</div>
@@ -153,7 +156,7 @@
 					<button
 						type="submit"
 						disabled={otpValues.some((v) => !v)}
-						class="w-full h-11 bg-[#A16207] text-[#F8F7F4] rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
+						class="w-full h-11 bg-[#A16207] text-primary-foreground rounded-lg hover:bg-[#A16207]/90 transition-all text-xs font-bold cursor-pointer select-none outline-none shadow-sm flex items-center justify-center gap-2
 							{otpValues.some((v) => !v) ? 'opacity-60 pointer-events-none cursor-not-allowed' : ''}"
 					>
 						Verify OTP

@@ -33,7 +33,7 @@ def code_explainer(
         db=db,
         user_id=current_user.id,
         category="code_explainer",
-        title="Code Explanation",
+        title=f"{result['language']} Code Explanation",
         input_text=data.code,
         output_text=result["result"]
     )

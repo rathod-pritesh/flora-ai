@@ -166,7 +166,7 @@ def login(
         "user": {
             "id": user.id,
             "name": user.name,
-            "email": user.name,
+            "email": user.email,
             "picture": user.picture
         }
     }

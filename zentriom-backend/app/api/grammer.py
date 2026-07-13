@@ -19,7 +19,7 @@ router = APIRouter()
 class GrammerRequest(BaseModel):
     text: str
 
-@router.post("/grammer")
+@router.post("/grammar")
 def grammer(
     data: GrammerRequest,
     db: Session = Depends(get_db),

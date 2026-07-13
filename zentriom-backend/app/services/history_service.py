@@ -39,3 +39,41 @@ def get_user_history(
         )
         .all()
     )
+    
+def delete_history(
+    db,
+    history_id: int,
+    user_id: int
+):
+    history = (
+        db.query(AIHistory)
+        .filter(
+            AIHistory.id == history_id,
+            AIHistory.user_id == user_id
+        )
+        .first()
+    )
+    
+    if not history:
+        return False
+    
+    db.delete(history)
+    db.commit()
+    
+    return True
+
+def clear_history(
+    db,
+    user_id: int
+):
+    (
+        db.query(AIHistory)
+        .filter(
+            AIHistory.user_id == user_id
+        )
+        .delete()
+    )
+    
+    db.commit()
+    
+    return True

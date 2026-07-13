@@ -133,7 +133,7 @@
 			{:else}
 				<form onsubmit={handleVerifyOtp} class="space-y-4">
 					<div class="space-y-2">
-						<label
+						<label for="verificationcode"
 							class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 							>Enter Verification Code</label
 						>

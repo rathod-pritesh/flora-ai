@@ -114,7 +114,7 @@
 			</div>
 
 			<div class="space-y-1">
-				<label class="text-xs font-semibold text-foreground"> Experience / Key Learning </label>
+				<label for="experience" class="text-xs font-semibold text-foreground"> Experience / Key Learning </label>
 
 				<Textarea
 					bind:value={experience}

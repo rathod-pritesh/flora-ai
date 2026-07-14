@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.services.auth_service import verify_google_token
 from app.core.security import (
@@ -60,25 +61,33 @@ def google_login(data: GoogleLoginRequest, db: Session = Depends(get_db)):
     user_info = verify_google_token(data.token)
     
     user = db.query(User).filter(
-        User.google_id == user_info["google_id"]
+        User.email == user_info["email"]
     ).first()
     
-    if not user:
+    if user:
+        if not user.google_id:
+            user.google_id = user_info["google_id"]
+        if user_info.get("picture"):
+            user.picture = user_info["picture"]
+        user.name = user_info["name"]
+    else:
         user = User(
             google_id=user_info["google_id"],
             email=user_info["email"],
             name=user_info["name"],
-            picture=user_info["picture"]
+            picture=user_info.get("picture")
         )
-        
         db.add(user)
         
-    else:
-        user.name = user_info["name"]
-        user.picture = user_info["picture"]
-        
-    db.commit()
-    db.refresh(user)
+    try:
+        db.commit()
+        db.refresh(user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered with another account."
+        )
     
     token = create_access_token(
         str(user.id)

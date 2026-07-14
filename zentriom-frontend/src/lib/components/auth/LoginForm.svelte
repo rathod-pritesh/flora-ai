@@ -46,7 +46,6 @@
 			toast.success('Welcome back!');
 
 			goto('/dashboard');
-
 		} catch (error) {
 			toast.error(error.message || 'Invalid email or password');
 		}
@@ -54,7 +53,6 @@
 </script>
 
 <form onsubmit={handleSubmit} class="space-y-4">
-	
 	<!-- Email Field -->
 	<div class="space-y-1">
 		<label
@@ -67,7 +65,7 @@
 			type="email"
 			bind:value={email}
 			onblur={() => (emailTouched = true)}
-			placeholder="e.g. pritesh@example.com"
+			placeholder="e.g. johndoe@example.com"
 			class="w-full h-10 px-3 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
 				{emailErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border'}"
 		/>
@@ -99,9 +97,7 @@
 				onblur={() => (passwordTouched = true)}
 				placeholder="••••••••"
 				class="w-full h-10 pl-3 pr-10 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
-					{passwordErrorMsg
-					? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-					: 'border-border'}"
+					{passwordErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border'}"
 			/>
 			<button
 				type="button"

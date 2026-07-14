@@ -19,23 +19,18 @@
     return sum(int(digit) ** n for digit in num_str) == num`);
 	let isAnalyzing = $state(false);
 	let explanation = $state('');
-
 	let detectedLanguage = $state('');
 	let copyStatus = $state(false);
 
 	async function handleExplain() {
 		if (!codeSnippet.trim()) return;
-
 		isAnalyzing = true;
-
 		try {
 			const result = await explainCode(codeSnippet);
-
 			explanation = result.explanation;
 			detectedLanguage = result.language;
 		} catch (err) {
 			console.error(err);
-
 			toast.error('Unable to explain the code.');
 		} finally {
 			isAnalyzing = false;
@@ -51,21 +46,33 @@
 
 	function formatMarkdown(text) {
 		if (!text) return '';
-		let escaped = text
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;");
-
-		// Bold
-		escaped = escaped.replace(/\*\*(.*?)\*\*/g, "<strong class='font-bold text-foreground'>$1</strong>");
-		// Italic
+		let escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		escaped = escaped.replace(
+			/\*\*(.*?)\*\*/g,
+			"<strong class='font-bold text-foreground'>$1</strong>"
+		);
 		escaped = escaped.replace(/\*(.*?)\*/g, "<em class='italic'>$1</em>");
 		return escaped;
+	}
+
+	function parseMarkdown(text) {
+		if (!text) return [];
+		const parts = text.split('```');
+		return parts.map((part, index) => {
+			const isCode = index % 2 === 1;
+			if (isCode) {
+				const lines = part.split('\n');
+				const lang = lines[0].trim();
+				const code = lines.slice(1).join('\n').trim();
+				return { type: 'code', code, lang };
+			} else {
+				return { type: 'text', content: part };
+			}
+		});
 	}
 </script>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start text-foreground">
-	<!-- Left: Code Input Card -->
 	<Card class="bg-card border-border shadow-xs">
 		<CardHeader class="border-b border-border">
 			<CardTitle class="text-base font-bold text-foreground font-sans">Code Editor Area</CardTitle>
@@ -77,20 +84,14 @@
 			<div class="relative">
 				<Textarea
 					bind:value={codeSnippet}
+					wrap="off"
 					placeholder="Paste code snippet here..."
-					class="min-h-[220px] bg-muted/40 border-border text-foreground text-xs font-mono p-4 leading-relaxed resize-none focus-visible:ring-1 focus-visible:ring-[#A16207]/50"
+					class="min-h-[220px] bg-muted/40 border-border text-foreground text-xs font-mono p-4 leading-relaxed resize-none focus-visible:ring-1 focus-visible:ring-[#A16207]/50 overflow-auto whitespace-pre"
 				/>
 
 				{#if detectedLanguage}
 					<div
-						class="absolute bottom-3 left-3 z-10
-			px-3 py-1
-			rounded-full
-			bg-stone-900/90
-			text-white
-			text-[10px] sm:text-xs
-			font-medium
-			backdrop-blur-sm"
+						class="absolute bottom-3 left-3 z-10 px-3 py-1 rounded-full bg-stone-900/90 text-white text-[10px] sm:text-xs font-medium backdrop-blur-sm"
 					>
 						{detectedLanguage}
 					</div>
@@ -98,9 +99,9 @@
 			</div>
 
 			<div class="flex items-center justify-between">
-				<span class="text-[10px] text-muted-foreground font-sans"
-					>{codeSnippet.split('\n').length} lines of code</span
-				>
+				<span class="text-[10px] text-muted-foreground font-sans">
+					{codeSnippet.split('\n').length} lines of code
+				</span>
 				<Button
 					onclick={handleExplain}
 					disabled={isAnalyzing || !codeSnippet.trim()}
@@ -113,7 +114,6 @@
 		</CardContent>
 	</Card>
 
-	<!-- Right: Explanation Panel -->
 	<Card class="bg-card border-border shadow-xs">
 		<CardHeader class="border-b border-border flex flex-row items-center justify-between pb-4">
 			<div>
@@ -156,7 +156,7 @@
 					<p class="text-xs font-sans">Decompiling snippet architecture...</p>
 				</div>
 			{:else}
-				<div class="space-y-4">
+				<div class="space-y-4 max-h-[450px] overflow-y-auto pr-2">
 					{#if detectedLanguage}
 						<Badge
 							variant="outline"
@@ -165,13 +165,40 @@
 							{detectedLanguage}
 						</Badge>
 					{/if}
-					
-					<div class="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed text-foreground space-y-4">
-						{@html formatMarkdown(explanation)}
-					</div>
+
+					{#each parseMarkdown(explanation) as block}
+						{#if block.type === 'code'}
+							<div
+								class="my-3 rounded-lg overflow-hidden border border-border font-mono text-xs shadow-inner"
+							>
+								{#if block.lang}
+									<div
+										class="bg-muted border-b border-border px-3 py-1.5 text-[10px] text-muted-foreground font-sans font-semibold flex items-center justify-between"
+									>
+										<span>{block.lang.toUpperCase()}</span>
+									</div>
+								{/if}
+								<pre
+									class="bg-muted/50 p-3 overflow-auto max-h-[250px] text-foreground leading-relaxed"><code
+										>{block.code}</code
+									></pre>
+							</div>
+						{:else}
+							<div
+								class="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed text-foreground space-y-2"
+							>
+								{#each block.content.split('\n') as paragraph}
+									{#if paragraph.trim()}
+										<p class="leading-relaxed">
+											{@html formatMarkdown(paragraph)}
+										</p>
+									{/if}
+								{/each}
+							</div>
+						{/if}
+					{/each}
 				</div>
 			{/if}
 		</CardContent>
 	</Card>
 </div>
-

@@ -67,7 +67,7 @@
 >
 	<div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
 		<div class="flex items-center justify-center gap-3">
-			<img src="/zentriom_logo_for_dark_theme.png" class="size-11 object-contain" alt="Zentriom" />
+			<img src="/logo.png" class="size-11 object-contain" alt="Zentriom" />
 			<span class="text-xl font-bold tracking-tight text-foreground font-sans">
 				<a href="/">Zentriom</a>
 			</span>
@@ -92,7 +92,9 @@
 			{/if}
 
 			{#if errorMessage}
-				<div class="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20">
+				<div
+					class="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"
+				>
 					{errorMessage}
 				</div>
 			{/if}
@@ -113,9 +115,7 @@
 							onblur={() => (passwordTouched = true)}
 							placeholder="••••••••"
 							class="w-full h-10 pl-3 pr-10 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
-								{passwordErrorMsg
-								? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-								: 'border-border'}"
+								{passwordErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border'}"
 						/>
 						<button
 							type="button"
@@ -149,9 +149,7 @@
 							onblur={() => (confirmTouched = true)}
 							placeholder="••••••••"
 							class="w-full h-10 pl-3 pr-10 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-[#A16207] focus:ring-1 focus:ring-[#A16207]/30 transition-all font-sans text-xs
-								{confirmErrorMsg
-								? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-								: 'border-border'}"
+								{confirmErrorMsg ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border'}"
 						/>
 						<button
 							type="button"

@@ -52,14 +52,12 @@
 			});
 
 			generatedPost = data.post;
-		} 
-		catch (error) {
+		} catch (error) {
 			console.error(error);
 
 			generatedPost = 'Unable to connect to backend. Please try again.';
 			toast.error('Unable to generate LinkedIn post.');
-		}
-		finally {
+		} finally {
 			isGenerating = false;
 		}
 	}
@@ -114,7 +112,9 @@
 			</div>
 
 			<div class="space-y-1">
-				<label for="experience" class="text-xs font-semibold text-foreground"> Experience / Key Learning </label>
+				<label for="experience" class="text-xs font-semibold text-foreground">
+					Experience / Key Learning
+				</label>
 
 				<Textarea
 					bind:value={experience}

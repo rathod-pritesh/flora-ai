@@ -1,10 +1,10 @@
 <script>
-	import { page } from "$app/stores";
-	import { goto } from "$app/navigation";
-	import { appState } from "$lib/states/app.svelte.js";
-	import Sidebar from "$lib/components/shared/Sidebar.svelte";
-	import Header from "$lib/components/shared/Header.svelte";
-	import { Sheet, SheetContent } from "$lib/components/ui/sheet/index.js";
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { appState } from '$lib/states/app.svelte.js';
+	import Sidebar from '$lib/components/shared/Sidebar.svelte';
+	import Header from '$lib/components/shared/Header.svelte';
+	import { Sheet, SheetContent } from '$lib/components/ui/sheet/index.js';
 
 	let { children } = $props();
 
@@ -12,7 +12,7 @@
 	$effect(() => {
 		if (!appState.user || !appState.user.name) {
 			if (typeof window !== 'undefined') {
-				goto("/?showAuth=true");
+				goto('/?showAuth=true');
 			}
 		}
 	});
@@ -21,16 +21,16 @@
 		const path = $page.url.pathname;
 		appState.currentRoute = path;
 		const titles = {
-			"/dashboard": "Chat",
-			"/settings": "Settings",
-			"/grammar": "Grammar Assistant",
-			"/linkedin": "LinkedIn Generator",
-			"/code-explainer": "Code Explanation",
-			"/bug-fixer": "Bug Fix Assistant",
-			"/jobs": "Job Discovery",
-			"/history": "History"
+			'/dashboard': 'Chat',
+			'/settings': 'Settings',
+			'/grammar': 'Grammar Assistant',
+			'/linkedin': 'LinkedIn Generator',
+			'/code-explainer': 'Code Explanation',
+			'/bug-fixer': 'Bug Fix Assistant',
+			'/jobs': 'Job Discovery',
+			'/history': 'History'
 		};
-		appState.pageTitle = titles[path] || "Zentriom AI";
+		appState.pageTitle = titles[path] || 'Zentriom AI';
 	});
 </script>
 
@@ -43,7 +43,7 @@
 	<!-- Mobile Sidebar Drawer -->
 	{#if appState.mobileSidebarOpen}
 		<Sheet bind:open={appState.mobileSidebarOpen}>
-			<SheetContent side="left" class="w-[280px] p-0 bg-[#1C1917] border-stone-800">
+			<SheetContent side="left" class="w-[280px] p-0 bg-sidebar border-sidebar-border">
 				<Sidebar />
 			</SheetContent>
 		</Sheet>

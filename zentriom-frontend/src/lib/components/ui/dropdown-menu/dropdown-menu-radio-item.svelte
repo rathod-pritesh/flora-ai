@@ -1,14 +1,9 @@
 <script>
-	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
+	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
 	import CheckIcon from '@lucide/svelte/icons/check';
-	import { cn } from "$lib/utils.js";
+	import { cn } from '$lib/utils.js';
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		children: childrenProp,
-		...restProps
-	} = $props();
+	let { ref = $bindable(null), class: className, children: childrenProp, ...restProps } = $props();
 </script>
 
 <DropdownMenuPrimitive.RadioItem
@@ -26,7 +21,7 @@
 			data-slot="dropdown-menu-radio-item-indicator"
 		>
 			{#if checked}
-				<CheckIcon  />
+				<CheckIcon />
 			{/if}
 		</span>
 		{@render childrenProp?.({ checked })}

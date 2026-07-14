@@ -6,8 +6,18 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { History, Search, Copy, Check, Sparkles, Languages, Share2, Code, Trash2 } from 'lucide-svelte';
-	import { getHistory, deleteHistory, clearHistory } from "$lib/services/auth"
+	import {
+		History,
+		Search,
+		Copy,
+		Check,
+		Sparkles,
+		Languages,
+		Share2,
+		Code,
+		Trash2
+	} from 'lucide-svelte';
+	import { getHistory, deleteHistory, clearHistory } from '$lib/services/auth';
 	import { API_URL } from '$lib/config/api';
 	import { fa } from 'zod/locales';
 	import { toast } from 'svelte-sonner';
@@ -50,13 +60,11 @@
 		if (!itemToDelete) return;
 
 		isDeleting = true;
-		
+
 		try {
 			await deleteHistory(itemToDelete.id);
 
-			items = items.filter(
-				(item) => item.id !== itemToDelete.id
-			);
+			items = items.filter((item) => item.id !== itemToDelete.id);
 
 			toast.success('History entry deleted.');
 			showDeleteConfirm = false;
@@ -75,7 +83,7 @@
 
 	async function confirmClearAll() {
 		isClearing = true;
-		
+
 		try {
 			await clearHistory();
 
@@ -210,6 +218,26 @@
 		</Button>
 	</div>
 
+	<Card class="bg-muted/50 border-border shadow-2xs relative overflow-hidden">
+		<CardContent class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+			<div class="space-y-1">
+				<div class="flex items-center gap-2 flex-wrap">
+					<h2 class="text-sm font-bold text-foreground font-sans">Session Based Chat History</h2>
+					<Badge
+						class="bg-[#A16207]/10 text-[#A16207] border-[#A16207]/20 text-[9px] font-sans uppercase tracking-wider px-2 py-0.5 rounded-full select-none font-semibold"
+					>
+						UNDER DEVELOPMENT
+					</Badge>
+				</div>
+				<p class="text-xs text-muted-foreground font-sans leading-relaxed max-w-2xl">
+					Session-based chat history is currently under development. Future updates will allow
+					conversations to be grouped, organized, and restored by session for a better user
+					experience.
+				</p>
+			</div>
+		</CardContent>
+	</Card>
+
 	<!-- Filters Card -->
 	<Card class="bg-card border-border shadow-xs">
 		<CardContent class="p-4 flex flex-col gap-4">
@@ -225,7 +253,8 @@
 				{#each filters as filter}
 					<button
 						onclick={() => (selectedFilter = filter.value)}
-						class="px-3 py-1 rounded-full text-xs font-semibold select-none outline-none border transition-all cursor-pointer {selectedFilter === filter.value
+						class="px-3 py-1 rounded-full text-xs font-semibold select-none outline-none border transition-all cursor-pointer {selectedFilter ===
+						filter.value
 							? 'bg-[#A16207]/10 border-[#A16207] text-[#A16207]'
 							: 'border-border text-muted-foreground hover:bg-muted'}"
 					>
@@ -262,7 +291,9 @@
 				)}
 				{#if groupItems.length > 0}
 					<div class="space-y-3">
-						<h3 class="text-xs font-bold text-muted-foreground font-sans uppercase tracking-wider pl-1">
+						<h3
+							class="text-xs font-bold text-muted-foreground font-sans uppercase tracking-wider pl-1"
+						>
 							{group}
 						</h3>
 						<div class="space-y-4">
@@ -313,40 +344,84 @@
 													</Button>
 												</div>
 											</div>
-											
+
 											<!-- Category-Specific Layout -->
 											<div class="text-xs font-sans leading-relaxed space-y-2">
 												{#if item.category === 'chat'}
 													<p class="font-bold text-foreground">{item.title || 'Untitled Chat'}</p>
 													<div class="bg-muted/50 border border-border rounded-lg p-3 space-y-1">
-														<span class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none">Input Prompt</span>
-														<p class="text-muted-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-2'}">
+														<span
+															class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none"
+															>Input Prompt</span
+														>
+														<p
+															class="text-muted-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-2'}"
+														>
 															{item.input_text || ''}
 														</p>
 													</div>
 													<div class="bg-card border border-border rounded-lg p-3 space-y-1">
 														<div class="flex items-center gap-1.5 mb-1 select-none">
-															<img src="/zentriom_logo_for_dark_theme.png" class="size-3.5 object-contain" alt="Zentriom Logo" />
-															<span class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans">Output Response</span>
+															<img
+																src="/logo.png"
+																class="size-3.5 object-contain"
+																alt="Zentriom Logo"
+															/>
+															<span
+																class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans"
+																>Output Response</span
+															>
 														</div>
-														<p class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-3'}">
+														<p
+															class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-3'}"
+														>
 															{item.output_text || ''}
 														</p>
 													</div>
 												{:else if item.category === 'grammar'}
 													<p class="font-bold text-foreground">Grammar Correction</p>
 													<div class="bg-muted/50 border border-border rounded-lg p-3 space-y-1">
-														<span class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none">Original Text</span>
-														<p class="text-muted-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-2'}">
+														<span
+															class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none"
+															>Original Text</span
+														>
+														<p
+															class="text-muted-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-2'}"
+														>
 															{item.input_text || ''}
 														</p>
 													</div>
 													<div class="bg-card border border-border rounded-lg p-3 space-y-1">
 														<div class="flex items-center gap-1.5 mb-1 select-none">
-															<img src="/zentriom_logo_for_dark_theme.png" class="size-3.5 object-contain" alt="Zentriom Logo" />
-															<span class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans">Corrected Text</span>
+															<img
+																src="/logo.png"
+																class="size-3.5 object-contain"
+																alt="Zentriom Logo"
+															/>
+															<span
+																class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans"
+																>Corrected Text</span
+															>
 														</div>
-														<p class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-3'}">
+														<p
+															class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-3'}"
+														>
 															{item.output_text || ''}
 														</p>
 													</div>
@@ -354,42 +429,100 @@
 													<p class="font-bold text-foreground">{item.title || 'Untitled Post'}</p>
 													<div class="bg-card border border-border rounded-lg p-3 space-y-1">
 														<div class="flex items-center gap-1.5 mb-1 select-none">
-															<img src="/zentriom_logo_for_dark_theme.png" class="size-3.5 object-contain" alt="Zentriom Logo" />
-															<span class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans">Generated LinkedIn Post Preview</span>
+															<img
+																src="/logo.png"
+																class="size-3.5 object-contain"
+																alt="Zentriom Logo"
+															/>
+															<span
+																class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans"
+																>Generated LinkedIn Post Preview</span
+															>
 														</div>
-														<p class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-5'}">
+														<p
+															class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-5'}"
+														>
 															{item.output_text || ''}
 														</p>
 													</div>
 												{:else if item.category === 'code_explainer'}
-													<p class="font-bold text-foreground">{item.title || 'Code Explanation'}</p>
+													<p class="font-bold text-foreground">
+														{item.title || 'Code Explanation'}
+													</p>
 													<div class="bg-muted/50 border border-border rounded-lg p-3 space-y-1">
-														<span class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none">Code Preview</span>
-														<pre class="text-muted-foreground overflow-x-auto text-[11px] font-mono p-1 bg-muted/25 rounded-md {expandedState[item.id] ? '' : 'line-clamp-2'}"><code>{item.input_text || ''}</code></pre>
+														<span
+															class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none"
+															>Code Preview</span
+														>
+														<pre
+															class="text-muted-foreground overflow-x-auto text-[11px] font-mono p-1 bg-muted/25 rounded-md {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-2'}"><code>{item.input_text || ''}</code></pre>
 													</div>
 													<div class="bg-card border border-border rounded-lg p-3 space-y-1">
 														<div class="flex items-center gap-1.5 mb-1 select-none">
-															<img src="/zentriom_logo_for_dark_theme.png" class="size-3.5 object-contain" alt="Zentriom Logo" />
-															<span class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans">Explanation Preview</span>
+															<img
+																src="/logo.png"
+																class="size-3.5 object-contain"
+																alt="Zentriom Logo"
+															/>
+															<span
+																class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans"
+																>Explanation Preview</span
+															>
 														</div>
-														<p class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-3'}">
+														<p
+															class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-3'}"
+														>
 															{item.output_text || ''}
 														</p>
 													</div>
 												{:else}
 													<p class="font-bold text-foreground">{item.title || 'Untitled Query'}</p>
 													<div class="bg-muted/50 border border-border rounded-lg p-3 space-y-1">
-														<span class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none">Input Prompt</span>
-														<p class="text-muted-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-2'}">
+														<span
+															class="block text-[8px] font-bold text-muted-foreground uppercase tracking-wider font-sans select-none"
+															>Input Prompt</span
+														>
+														<p
+															class="text-muted-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-2'}"
+														>
 															{item.input_text || ''}
 														</p>
 													</div>
 													<div class="bg-card border border-border rounded-lg p-3 space-y-1">
 														<div class="flex items-center gap-1.5 mb-1 select-none">
-															<img src="/zentriom_logo_for_dark_theme.png" class="size-3.5 object-contain" alt="Zentriom Logo" />
-															<span class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans">Output Response</span>
+															<img
+																src="/logo.png"
+																class="size-3.5 object-contain"
+																alt="Zentriom Logo"
+															/>
+															<span
+																class="block text-[8px] font-bold text-[#A16207] uppercase tracking-wider font-sans"
+																>Output Response</span
+															>
 														</div>
-														<p class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[item.id] ? '' : 'line-clamp-3'}">
+														<p
+															class="text-foreground whitespace-pre-wrap text-[11px] font-sans {expandedState[
+																item.id
+															]
+																? ''
+																: 'line-clamp-3'}"
+														>
 															{item.output_text || ''}
 														</p>
 													</div>
@@ -430,15 +563,22 @@
 
 <!-- Confirmation Modal for Single Delete -->
 {#if showDeleteConfirm}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
-		<div class="bg-card border border-border rounded-xl shadow-lg p-6 max-w-sm w-full space-y-4 text-foreground">
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in"
+	>
+		<div
+			class="bg-card border border-border rounded-xl shadow-lg p-6 max-w-sm w-full space-y-4 text-foreground"
+		>
 			<h3 class="text-sm font-bold font-sans">Delete History Item</h3>
 			<p class="text-xs text-muted-foreground font-sans">Delete this history item?</p>
 			<div class="flex justify-end gap-2 text-xs font-semibold select-none">
 				<Button
 					variant="outline"
 					class="border-border text-foreground hover:bg-muted font-sans cursor-pointer bg-card"
-					onclick={() => { showDeleteConfirm = false; itemToDelete = null; }}
+					onclick={() => {
+						showDeleteConfirm = false;
+						itemToDelete = null;
+					}}
 					disabled={isDeleting}
 				>
 					Cancel
@@ -458,15 +598,21 @@
 
 <!-- Confirmation Modal for Clear All -->
 {#if showClearConfirm}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
-		<div class="bg-card border border-border rounded-xl shadow-lg p-6 max-w-sm w-full space-y-4 text-foreground">
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in"
+	>
+		<div
+			class="bg-card border border-border rounded-xl shadow-lg p-6 max-w-sm w-full space-y-4 text-foreground"
+		>
 			<h3 class="text-sm font-bold font-sans">Clear All History</h3>
-			<p class="text-xs text-muted-foreground font-sans">Delete all history records? This action cannot be undone.</p>
+			<p class="text-xs text-muted-foreground font-sans">
+				Delete all history records? This action cannot be undone.
+			</p>
 			<div class="flex justify-end gap-2 text-xs font-semibold select-none">
 				<Button
 					variant="outline"
 					class="border-border text-foreground hover:bg-muted font-sans cursor-pointer bg-card"
-					onclick={() => showClearConfirm = false}
+					onclick={() => (showClearConfirm = false)}
 					disabled={isClearing}
 				>
 					Cancel

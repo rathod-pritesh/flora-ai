@@ -83,7 +83,7 @@
 >
 	<div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
 		<div class="flex items-center justify-center gap-3">
-			<img src="/zentriom_logo_for_dark_theme.png" class="size-11 object-contain" alt="Zentriom" />
+			<img src="/logo.png" class="size-11 object-contain" alt="Zentriom" />
 			<span class="text-xl font-bold tracking-tight text-foreground font-sans">
 				<a href="/">Zentriom</a>
 			</span>
@@ -133,7 +133,8 @@
 			{:else}
 				<form onsubmit={handleVerifyOtp} class="space-y-4">
 					<div class="space-y-2">
-						<label for="verificationcode"
+						<label
+							for="verificationcode"
 							class="block text-[10px] font-bold text-muted-foreground tracking-wider uppercase font-sans"
 							>Enter Verification Code</label
 						>

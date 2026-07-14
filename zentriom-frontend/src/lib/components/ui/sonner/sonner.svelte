@@ -1,6 +1,6 @@
 <script>
-	import { Toaster as Sonner } from "svelte-sonner";
-	import { mode } from "mode-watcher";
+	import { Toaster as Sonner } from 'svelte-sonner';
+	import { mode } from 'mode-watcher';
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 	import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
 	import OctagonXIcon from '@lucide/svelte/icons/octagon-x';

@@ -568,7 +568,7 @@
 				<h2 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl font-sans">
 					How It Works
 				</h2>
-				<p class="text-zinc-300 text-xs sm:text-sm font-sans">
+				<p class="text-muted-foreground text-xs sm:text-sm font-sans">
 					Seamless workflow routing designed for single-user workspaces.
 				</p>
 			</div>

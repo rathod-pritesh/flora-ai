@@ -1,35 +1,39 @@
-# import smtplib
+import smtplib
 
-# from email.mime.text import MIMEText
+from email.mime.text import MIMEText
 
 from app.core.config import (
-#     SMTP_SERVER,
-#     SMTP_PORT,
-#     SMTP_EMAIL,
-#     SMTP_PASSWORD
-    RESEND_API_KEY
+    SMTP_SERVER,
+    SMTP_PORT,
+    SMTP_EMAIL,
+    SMTP_PASSWORD
 )
-import resend
-
 
 def send_otp_email(
     email: str,
     otp: str,
-    subject: str = "Verification Code"
+    subject: str = "Password Reset OTP"
 ):
-    resend.Emails.send({
-        "from": "Zentriom <onboarding@resend.dev>",
-        "to": [email],
-        "subject": subject,
-        "html": f"""
-        <div style="font-family: Arial, sans-serif;">
-            <h2>Zentriom Verification Code</h2>
-
-            <p>Your verification code is:</p>
-
-            <h1>{otp}</h1>
-
-            <p>This code will expire shortly.</p>
-        </div>
-        """
-    })
+    msg = MIMEText(
+        f"Your OTP is: {otp}"
+    )
+    
+    msg["Subject"] = subject
+    
+    msg["From"] = SMTP_EMAIL
+    
+    msg["To"] = email
+    
+    with smtplib.SMTP(
+        SMTP_SERVER,
+        SMTP_PORT
+    ) as server:
+        
+        server.starttls()
+        
+        server.login(
+            SMTP_EMAIL,
+            SMTP_PASSWORD
+        )
+        
+        server.send_message(msg)

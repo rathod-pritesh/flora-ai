@@ -17,8 +17,10 @@ JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", 10080))
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 
-SMTP_EMAIL = os.getenv("SMTP_EMAIL")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+# SMTP_SERVER = os.getenv("SMTP_SERVER")
+# SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+
+# SMTP_EMAIL = os.getenv("SMTP_EMAIL")
+# SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")

@@ -233,9 +233,10 @@ def signup_send_otp(
             subject="Email Verification OTP"
         )
     except Exception as e:
+        print("SMTP ERROR:", repr(e))
         raise HTTPException(
             status_code=500,
-            detail="Unable to send verification code."
+            detail=str(e)
         )
     
     return {

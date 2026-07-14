@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
@@ -12,9 +13,14 @@ from app.api.history import router as history_router
 from app.db.database import engine, Base
 from app.models.users import User
 from app.models.password_reset_otp import PasswordResetOTP
+from app.models.signup_otp import SignupOTP
 from app.models.ai_history import AIHistory
 
-app = FastAPI()
+app = FastAPI(
+    docs_url=None if os.getenv("APP_ENV") == "production" else "/docs",
+    redoc_url=None if os.getenv("APP_ENV") == "production" else "/redocs",
+    openapi_url=None if os.getenv("APP_ENV") == "production" else "/openapi.json",
+)
 
 app.add_middleware(
     CORSMiddleware,

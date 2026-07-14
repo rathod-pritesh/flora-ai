@@ -11,13 +11,14 @@ from app.core.config import (
 
 def send_otp_email(
     email: str,
-    otp: str
+    otp: str,
+    subject: str = "Password Reset OTP"
 ):
     msg = MIMEText(
         f"Your OTP is: {otp}"
     )
     
-    msg["Subject"] = "Password Reset OTP"
+    msg["Subject"] = subject
     
     msg["From"] = SMTP_EMAIL
     

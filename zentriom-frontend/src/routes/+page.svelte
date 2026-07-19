@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+	import { goto, pushState, replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { authStore, loadAuth, logout } from '$lib/stores/auth.svelte.js';
 	import {
@@ -101,7 +101,7 @@
 		const element = document.getElementById(sectionId);
 		if (element) {
 			element.scrollIntoView({ behavior: 'smooth' });
-			history.pushState(null, '', `#${sectionId}`);
+			pushState(`#${sectionId}`, $page.state);
 			activeSection = sectionId;
 		}
 	}
@@ -128,15 +128,11 @@
 			// Update URL hash dynamically during scroll without polluting history stack
 			if (current) {
 				if (window.location.hash !== `#${current}`) {
-					history.replaceState(null, '', `#${current}`);
+					replaceState(`#${current}`, $page.state);
 				}
 			} else {
 				if (window.location.hash && window.location.hash !== '#') {
-					history.replaceState(
-						null,
-						'',
-						window.location.pathname + window.location.search
-					);
+					replaceState('/', $page.state);
 				}
 			}
 		};
@@ -193,7 +189,7 @@
 			name: 'Resume Review',
 			desc: 'Analyze resume quality and get personalized feedback to improve your profile.',
 			icon: FileText,
-			underDevelopment: true
+			path: 'https://readyhire.vercel.app/'
 		},
 		{
 			name: 'Job Match',
@@ -535,7 +531,11 @@
 						<button
 							onclick={(e) => {
 								if (authStore.isAuthenticated) {
-									goto(feat.path);
+									if (feat.path.startsWith('http')) {
+										window.open(feat.path, '_blank');
+									} else {
+										goto(feat.path);
+									}
 								} else {
 									e.preventDefault();
 									showLogin();

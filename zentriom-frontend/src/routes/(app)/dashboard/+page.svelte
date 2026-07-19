@@ -47,7 +47,7 @@
 			title: 'Resume Review',
 			desc: 'Analyze resume quality and get personalized feedback to improve your profile.',
 			icon: FileText,
-			underDevelopment: true
+			path: 'https://readyhire.vercel.app/'
 		},
 		{
 			title: 'Job Match',
@@ -297,7 +297,13 @@
 						</div>
 					{:else}
 						<button
-							onclick={() => goto(card.path)}
+							onclick={() => {
+								if (card.path.startsWith('http')) {
+									window.open(card.path, '_blank');
+								} else {
+									goto(card.path);
+								}
+							}}
 							class="flex flex-col text-left p-5 rounded-xl border border-border bg-card hover:border-[#A16207]/40 hover:shadow-sm hover:shadow-[#A16207]/5 transition-all group outline-none cursor-pointer"
 						>
 							<div
